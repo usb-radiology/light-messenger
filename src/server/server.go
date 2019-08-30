@@ -1,9 +1,12 @@
 package server
 
 import (
+	"bytes"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
+	"text/template"
 
 	"github.com/gorilla/mux"
 	"github.com/usb-radiology/light-messenger/src/configuration"
@@ -32,19 +35,39 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 
 	// r.Use(loggingMiddleware)
 
-	// api
+	indexTemplateHTML, readFileErr := ioutil.ReadFile("templates/index.html")
+	if readFileErr != nil {
+		log.Fatal(readFileErr)
+		return nil
+	}
+
+	indexTpl := template.Must(template.New("index_view").Parse(string(indexTemplateHTML)))
+
+	// routes
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		response := "hello world"
-		w.Write([]byte(response))
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		data := map[string]interface{}{
+			"foo": "bar",
+		}
+
+		render(w, r, indexTpl, "index_view", data)
 	})
 
-	// fs := http.FileServer(http.Dir("public"))
-	// r.PathPrefix("/").Handler(fs)
-	// r.Handle("/", fs)
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	// log.Printf("%+v", routerAPI)
 
 	return r
+}
+
+func render(w http.ResponseWriter, r *http.Request, tpl *template.Template, name string, data interface{}) {
+	buf := new(bytes.Buffer)
+	if err := tpl.ExecuteTemplate(buf, name, data); err != nil {
+		log.Fatalf("\nRender Error: %v\n", err)
+		return
+	}
+	w.Write(buf.Bytes())
 }
 
 // Start ...

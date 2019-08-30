@@ -1,2 +1,2 @@
 #!/bin/sh
-ag --go --json -l --ignore-dir=ui | entr -r -s "make run"
+ag --go --json --html -l --ignore-dir=ui | entr -r -s "make run"
