@@ -1,18 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>USB KRN light-messenger</title>
 
-    <link rel="stylesheet" href="/static/css/bulma-0.7.5.css" />
-  </head>
-  <body>
-    <div class="section">
-      <div class="container">
-        {{.foo}}
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USB KRN light-messenger</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/static/css/bulma-0.7.5.css" />
+
+
+  <script type="text/javascript">
+
+    function openTab(evt, tabName) {
+      var i, x, tablinks;
+      x = document.getElementsByClassName("content-tab");
+      for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tab");
+      for (i = 0; i < x.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" is-active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " is-active";
+    }
+
+
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand"><a class="navbar-item" href="/">
+          <figure class="image is-24x24"><img src="/static/images/usb-logo.png" alt="logo"></figure>&nbsp; Light
+          Messenger
+        </a><a role="button" class="navbar-burger burger" aria-label="menu" data-target="navbarBasicExample"
+          href="#"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></a>
+      </div>
+      <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="tooltip is-tooltip-bottom" data-tooltip="2019-08-08 09:41:53"><span
+                class="tag is-dark">v1.0.0</span></div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="tabs is-boxed is-centered">
+        <ul>
+          <li class="tab is-active" onclick="openTab(event,'ct')"><a>Visierung CT</a></li>
+          <li class="tab" onclick="openTab(event,'mr')"><a>Visierung MR</a></li>
+          <li class="tab" onclick="openTab(event,'nuk')"><a>Visierung NUK</a></li>
+        </ul>
       </div>
     </div>
-  </body>
+  </section>
+
+  <div class="container">
+    <div id="ct" class="content-tab">
+
+      <div class="columns">
+        <div class="column is-3">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                AOD
+              </p>
+              <div class="tags has-addons card-header-icon">
+              </div>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <a href="#" class="button is-rounded is-info is-small" disabled>Tiefe Prio</a>
+                <a href="#" class="button is-rounded is-warning is-small" disabled>Mittlere Prio</a>
+                <a href="#" class="button is-rounded is-danger is-small" disabled>Hohe Prio</a>
+              </div>
+            </div>
+            <footer class="card-footer">
+              <div class="card-footer-item columns">
+                <div class="column"><span class="is-size-7">Arduino Status</span></div>
+                <div class="column has-text-danger has-text-right"><i class="fa fa-ban"></i></div>
+              </div>
+            </footer>
+          </div>
+        </div>
+        <div class="column is-3">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                CTD
+              </p>
+              <div class="tags has-addons card-header-icon">
+              </div>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <a href="#" class="button is-rounded is-info is-small">Tiefe Prio</a>
+                <a href="#" class="button is-rounded is-warning is-small">Mittlere Prio</a>
+                <a href="#" class="button is-rounded is-danger is-small">Hohe Prio</a>
+              </div>
+            </div>
+            <footer class="card-footer">
+              <div class="card-footer-item columns">
+                <div class="column"><span class="is-size-7">Arduino Status</span></div>
+                <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
+              </div>
+            </footer>
+          </div>
+        </div>
+        <div class="column is-3">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                MSK
+              </p>
+              <div class="tags has-addons card-header-icon">
+                <span class="tag is-danger">Offen</span>
+                <span class="tag is-delete"></span>
+              </div>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <a href="#" class="button is-rounded is-info is-small" disabled>Tiefe Prio</a>
+                <a href="#" class="button is-rounded is-warning is-small" disabled>Mittlere Prio</a>
+                <a href="#" class="button is-rounded is-danger is-small" disabled>Hohe Prio</a>
+              </div>
+            </div>
+            <footer class="card-footer">
+              <div class="card-footer-item columns">
+                <div class="column"><span class="is-size-7">Arduino Status</span></div>
+                <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
+              </div>
+            </footer>
+          </div>
+        </div>
+        <div class="column is-3">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                Neuro
+              </p>
+              <div class="tags has-addons card-header-icon">
+                <span class="tag is-warning">Offen</span>
+                <span class="tag is-delete"></span>
+              </div>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <a href="#" class="button is-rounded is-info is-small" disabled>Tiefe Prio</a>
+                <a href="#" class="button is-rounded is-warning is-small" disabled>Mittlere Prio</a>
+                <a href="#" class="button is-rounded is-danger is-small">Hohe Prio</a>
+              </div>
+            </div>
+            <footer class="card-footer">
+              <div class="card-footer-item columns">
+                <div class="column"><span class="is-size-7">Arduino Status</span></div>
+                <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="mr" class="content-tab" style="display:none">
+      <p>
+        test2<br>
+        Details Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
+        industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled
+        it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic
+        typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
+        sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker
+        including versions of Lorem Ipsum.</p>
+    </div>
+    <div id="nuk" class="content-tab" style="display:none">
+      <p>
+        test3 <br>
+        Specification Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been
+        the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
+        scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into
+        electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of
+        Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus
+        PageMaker including versions of Lorem Ipsum.</p>
+    </div>
+  </div>
+</body>
+
 </html>
