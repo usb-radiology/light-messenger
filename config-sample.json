@@ -1,5 +1,12 @@
 {
   "Server": {
     "HTTPPort": 9200
+  },
+  "Database": {
+    "Username": "light_messenger",
+    "Password": "lightscameraaction",
+    "Host": "localhost",
+    "Port": 3311,
+    "DBName": "light_messenger"
   }
 }

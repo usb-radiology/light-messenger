@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/usb-radiology/light-messenger/src/configuration"
+	"github.com/usb-radiology/light-messenger/src/db"
 )
 
 // InitServer ...
@@ -32,6 +33,37 @@ func InitServer(initConfig *configuration.Configuration) *http.Server {
 func getRouter(initConfig *configuration.Configuration) *mux.Router {
 
 	r := mux.NewRouter()
+
+	arduinoRouter := r.PathPrefix("/nce-rest/arduino-status/").Subrouter()
+	arduinoRouter.HandleFunc("/{department}-status", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		department := vars["department"]
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		db, errDB := lmdatabase.GetDB(initConfig)
+		if errDB != nil {
+			log.Fatal(errDB)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return
+		}
+
+		status := lmdatabase.ArduinoStatus{
+			ArduinoStatusID: "1",
+			DepartmentID:    department,
+			StatusAt:        "xxx",
+		}
+
+		errInsert := lmdatabase.InsertStatus(db, status)
+		if errInsert != nil {
+			log.Fatal(errInsert)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return
+		}
+
+		w.Write([]byte(department))
+	})
 
 	// r.Use(loggingMiddleware)
 

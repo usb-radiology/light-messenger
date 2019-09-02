@@ -14,6 +14,13 @@ type Configuration struct {
 	Server struct {
 		HTTPPort int
 	}
+	Database struct {
+		Username string
+    	Password string
+    	Host string
+    	Port int
+        DBName string
+	}
 }
 
 // LoadAndSetConfiguration ...

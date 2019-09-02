@@ -20,4 +20,8 @@ func TestUnitShouldLoadAndSetConfiguration(t *testing.T) {
 	if initConfig.Server.HTTPPort == 0 {
 		t.Errorf("Should have loaded the http port %d", initConfig.Server.HTTPPort)
 	}
+	
+	if initConfig.Database.Port != 3311 {
+		t.Errorf("Should have loaded the database port %d", initConfig.Database.Port)
+	}
 }
