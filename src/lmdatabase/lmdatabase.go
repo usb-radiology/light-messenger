@@ -87,7 +87,7 @@ func IsAlive(db *sql.DB, department string, now int64) (*ArduinoStatus, error) {
 		if errRowScan == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, errors.Wrap(errRowScan, "error retrieving result")
+		return nil, errors.Wrap(errRowScan, "error retrieving arduino status")
 	}
 
 	return &result, nil
@@ -108,7 +108,57 @@ func InsertNotification(db *sql.DB, department string, priority int, modality st
 	defer stmtIns.Close()
 	_, errExec := stmtIns.Exec(uuid.New().String(), department, priority, modality, createdAt)
 	if errExec != nil {
-		return errors.Wrap(errExec, "fu")
+		return errors.Wrap(errExec, "error inserting notification")
+	}
+	return nil
+}
+
+// SelectNotification ..
+func SelectNotification(db *sql.DB, department string, priority int, modality string) (*Notification, error) {
+	// Prepare statement for inserting data
+	queryStr :=
+		`SELECT 
+			notificationId, departmentId, priority, modality, createdAt
+		FROM 
+			Notification 
+		WHERE
+			confirmedAt IS NULL`
+
+	row := db.QueryRow(queryStr)
+
+	var result Notification
+
+	errRowScan := row.Scan(&result.NotificationID, &result.DepartmentID, &result.DepartmentID, &result.Priority, &result.Modality, &result.CreatedAt)
+	if errRowScan != nil {
+		if errRowScan == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errors.Wrap(errRowScan, "error retrieving notification")
+	}
+
+	return &result, nil
+}
+
+
+// UpdateNotification ..
+func UpdateNotification(db *sql.DB, notificationID string, priority int) error {
+	// Prepare statement for inserting data
+	stmtIns, err := db.Prepare(`
+	UPDATE
+		Notification 
+	SET
+		priority = ?
+	WHERE 
+		notificationId = ?`)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmtIns.Close()
+	_, errExec := stmtIns.Exec(priority, notificationID)
+	if errExec != nil {
+		return errors.Wrap(errExec, "error updating notification")
 	}
 	return nil
 }
