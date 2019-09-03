@@ -2,6 +2,7 @@ package lmdatabase
 
 import (
 	"database/sql"
+	"log"
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver ..
@@ -115,7 +116,7 @@ func InsertNotification(db *sql.DB, department string, priority int, modality st
 func QueryNotification(db *sql.DB, modality string, department string) (*Notification, error) {
 	queryStr :=
 		`SELECT
-			notificationId
+			notificationId, modality, departmentId, priority
 		FROM
 			Notification
 		WHERE
@@ -129,12 +130,16 @@ func QueryNotification(db *sql.DB, modality string, department string) (*Notific
 
 	row := db.QueryRow(queryStr, modality, department)
 	var result Notification
-	errRowScan := row.Scan(&result.NotificationID)
+	errRowScan := row.Scan(&result.NotificationID, &result.Modality, &result.DepartmentID, &result.Priority)
 	if errRowScan != nil {
 		if errRowScan == sql.ErrNoRows {
-			return nil, nil
+			result.Modality = modality
+			result.DepartmentID = department
+			result.Priority = 99
+			return &result, nil
 		}
-		return nil, errors.Wrap(errRowScan, "error retrieving notification")
+		log.Print(errRowScan)
+		return &result, errors.Wrap(errRowScan, "error retrieving notification")
 	}
 	return &result, nil
 }

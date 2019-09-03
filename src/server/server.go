@@ -46,31 +46,22 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 	return nil
 }
 
-func mainHandler(w http.ResponseWriter, r *http.Request) {
+func mainHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
 	indexTpl := template.Must(template.ParseFiles("templates/index.html"))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// AOD Card Template
-	aodData := map[string]interface{}{
-		"Modality":       "ct",
-		"Department":     "aod",
-		"PriorityNumber": 99,
-	}
-	var aodBuffer bytes.Buffer
-	aodCard := template.Must(template.ParseFiles("templates/card.html"))
-	aodErr := aodCard.Execute(&aodBuffer, aodData);
-	if aodErr != nil {
-		http.Error(w, aodErr.Error(), http.StatusInternalServerError)
-	}
 	data := map[string]interface{}{
-		"AOD": aodBuffer.String(),
+		"AOD": create(db, "ct", "aod"),
+		"CTD": create(db, "ct", "ctd"),
+		"MSK": create(db, "ct", "msk"),
+		"NR": create(db, "ct", "NR"),
 	}
 	err := indexTpl.Execute(w, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	//render(w, r, indexTpl, indexTpl, data)
+	return nil
 }
 
 func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
@@ -82,7 +73,7 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 	modality := vars["modality"]
 	department := vars["department"]
 	priority := vars["priority"]
-
+	log.Print("priorityHandler ", modality, ", ", department, ", ", priority)
 	priorityMap := map[string]string{
 		"1": "is-danger",
 		"2": "is-warning",
@@ -91,7 +82,7 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 	priorityNumber, _ := strconv.Atoi(priority)
 
 	notification, _ := lmdatabase.QueryNotification(db, modality, department)
-	if notification == nil {
+	if notification.NotificationID == "" {
 		errInsertNotification := lmdatabase.InsertNotification(db, department, priorityNumber, modality, time.Now().Unix())
 		if errInsertNotification != nil {
 			log.Fatal(errInsertNotification)
@@ -151,7 +142,7 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 
 func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/", mainHandler)
+	r.Handle("/", handler{initConfig, mainHandler})
 	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
 	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
 	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})

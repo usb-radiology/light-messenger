@@ -67,80 +67,13 @@
           {{ .AOD }}
         </div>
         <div class="column is-3">
-          <div class="card" id="ct-ctd">
-            <header class="card-header">
-              <p class="card-header-title">
-                CTD
-              </p>
-              <div class="tags has-addons card-header-icon">
-              </div>
-            </header>
-            <div class="card-content">
-              <div class="content">
-                <a href="#" class="button is-rounded is-info is-small" ic-target="#ct-ctd" ic-post-to="/modality/ct/department/ctd/prio/3">Tiefe Prio</a>
-                <a href="#" class="button is-rounded is-warning is-small" ic-target="#ct-ctd" ic-post-to="/modality/ct/department/ctd/prio/2">Mittlere Prio</a>
-                <a href="#" class="button is-rounded is-danger is-small" ic-target="#ct-ctd" ic-post-to="/modality/ct/department/ctd/prio/1">Hohe Prio</a>
-              </div>
-            </div>
-            <footer class="card-footer">
-              <div class="card-footer-item columns">
-                <div class="column"><span class="is-size-7">Arduino Status</span></div>
-                <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
-              </div>
-            </footer>
-          </div>
+          {{ .CTD}}
         </div>
         <div class="column is-3">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                MSK
-              </p>
-              <div class="tags has-addons card-header-icon">
-                <span class="tag is-danger">Offen</span>
-                <span class="tag is-delete"></span>
-              </div>
-            </header>
-            <div class="card-content">
-              <div class="content">
-                <a href="#" class="button is-rounded is-info is-small" disabled>Tiefe Prio</a>
-                <a href="#" class="button is-rounded is-warning is-small" disabled>Mittlere Prio</a>
-                <a href="#" class="button is-rounded is-danger is-small" disabled>Hohe Prio</a>
-              </div>
-            </div>
-            <footer class="card-footer">
-              <div class="card-footer-item columns">
-                <div class="column"><span class="is-size-7">Arduino Status</span></div>
-                <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
-              </div>
-            </footer>
-          </div>
+          {{ .MSK}}
         </div>
         <div class="column is-3">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                Neuro
-              </p>
-              <div class="tags has-addons card-header-icon">
-                <span class="tag is-warning">Offen</span>
-                <span class="tag is-delete"></span>
-              </div>
-            </header>
-            <div class="card-content">
-              <div class="content">
-                <a href="#" class="button is-rounded is-info is-small" disabled>Tiefe Prio</a>
-                <a href="#" class="button is-rounded is-warning is-small" disabled>Mittlere Prio</a>
-                <a href="#" class="button is-rounded is-danger is-small">Hohe Prio</a>
-              </div>
-            </div>
-            <footer class="card-footer">
-              <div class="card-footer-item columns">
-                <div class="column"><span class="is-size-7">Arduino Status</span></div>
-                <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
-              </div>
-            </footer>
-          </div>
+          {{ .NR}}
         </div>
       </div>
     </div>
