@@ -12,11 +12,11 @@ DROP TABLE IF EXISTS `Notification`;
 
 CREATE TABLE `Notification` (
   `notificationId` varchar(255) NOT NULL,
+  `modality` varchar(255) NOT NULL,
   `departmentId` varchar(255) NOT NULL,
-  `notificationStatus` varchar(255) NOT NULL,
   `priority` int(11) NOT NULL,
-  `superiorDepartment` varchar(255) NOT NULL,
-  `createdAt` varchar(255) NOT NULL,
-  `processedAt` varchar(255)DEFAULT NULL,
+  `createdAt` bigint NOT NULL,
+  `confirmedAt` bigint DEFAULT NULL,
+  `cancelledAt` bigint DEFAULT NULL,
   PRIMARY KEY (`notificationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

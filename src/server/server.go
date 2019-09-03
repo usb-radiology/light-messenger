@@ -76,7 +76,7 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 	}
 	priorityNumber, _ := strconv.Atoi(priority)
 
-	notification, _ := lmdatabase.SelectNotification(db, department, priorityNumber, modality)
+	notification, _ := lmdatabase.QueryNotification(db, modality, department)
 	if notification == nil {
 		errInsertNotification := lmdatabase.InsertNotification(db, department, priorityNumber, modality, time.Now().Unix())
 		if errInsertNotification != nil {
@@ -126,6 +126,8 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 		"Department":     department,
 		"PriorityNumber": 99, // needed because of le comparison in template
 	}
+
+	lmdatabase.CancelNotification(db, modality, department, time.Now().Unix())
 
 	if err := cardTpl.ExecuteTemplate(w, "card_view", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

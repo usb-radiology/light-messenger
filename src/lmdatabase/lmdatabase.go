@@ -47,12 +47,11 @@ type Notification struct {
 // InsertStatus ..
 func InsertStatus(db *sql.DB, status ArduinoStatus) error {
 
-	// Prepare statement for inserting data
 	stmtIns, err := db.Prepare(`
-	INSERT INTO 
-		ArduinoStatus 
-	VALUES( ?, ? ) 
-		ON DUPLICATE KEY UPDATE 
+	INSERT INTO
+		ArduinoStatus
+	VALUES( ?, ? )
+		ON DUPLICATE KEY UPDATE
 	statusAt =?`)
 
 	if err != nil {
@@ -71,11 +70,11 @@ func InsertStatus(db *sql.DB, status ArduinoStatus) error {
 func IsAlive(db *sql.DB, department string, now int64) (*ArduinoStatus, error) {
 
 	queryStr := `
-	SELECT departmentId, statusAt FROM 
-		ArduinoStatus 
+	SELECT departmentId, statusAt FROM
+		ArduinoStatus
 	WHERE
 		departmentId = ?
-	AND 
+	AND
 		statusAt > ?`
 
 	row := db.QueryRow(queryStr, department, now-300)
@@ -95,9 +94,8 @@ func IsAlive(db *sql.DB, department string, now int64) (*ArduinoStatus, error) {
 
 // InsertNotification ..
 func InsertNotification(db *sql.DB, department string, priority int, modality string, createdAt int64) error {
-	// Prepare statement for inserting data
 	stmtIns, err := db.Prepare(`
-	INSERT INTO 
+	INSERT INTO
 		Notification (notificationId, departmentId, priority, modality, createdAt)
 	VALUES( ?, ? , ?, ?, ?) `)
 
@@ -113,42 +111,70 @@ func InsertNotification(db *sql.DB, department string, priority int, modality st
 	return nil
 }
 
-// SelectNotification ..
-func SelectNotification(db *sql.DB, department string, priority int, modality string) (*Notification, error) {
-	// Prepare statement for inserting data
+// QueryNotification ..
+func QueryNotification(db *sql.DB, modality string, department string) (*Notification, error) {
 	queryStr :=
-		`SELECT 
-			notificationId, departmentId, priority, modality, createdAt
-		FROM 
-			Notification 
+		`SELECT
+			notificationId
+		FROM
+			Notification
 		WHERE
+			modality = ?
+		AND
+			departmentId = ?
+		AND
+			cancelledAt IS NULL
+		AND
 			confirmedAt IS NULL`
 
-	row := db.QueryRow(queryStr)
-
+	row := db.QueryRow(queryStr, modality, department)
 	var result Notification
-
-	errRowScan := row.Scan(&result.NotificationID, &result.DepartmentID, &result.DepartmentID, &result.Priority, &result.Modality, &result.CreatedAt)
+	errRowScan := row.Scan(&result.NotificationID)
 	if errRowScan != nil {
 		if errRowScan == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, errors.Wrap(errRowScan, "error retrieving notification")
 	}
-
 	return &result, nil
 }
 
+// CancelNotification ..
+func CancelNotification(db *sql.DB, modality string, department string, cancelledAt int64) error {
+	stmtIns, err := db.Prepare(`
+	UPDATE
+		Notification
+	SET
+		cancelledAt = ?
+	WHERE
+		modality = ?
+	AND
+		departmentId = ?
+	AND
+		confirmedAt IS NULL
+	AND
+		cancelledAt IS NULL`)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmtIns.Close()
+	_, errExec := stmtIns.Exec(cancelledAt, modality, department)
+	if errExec != nil {
+		return errors.Wrap(errExec, "error updating notification")
+	}
+	return nil
+}
 
 // UpdateNotification ..
 func UpdateNotification(db *sql.DB, notificationID string, priority int) error {
-	// Prepare statement for inserting data
 	stmtIns, err := db.Prepare(`
 	UPDATE
-		Notification 
+		Notification
 	SET
 		priority = ?
-	WHERE 
+	WHERE
 		notificationId = ?`)
 
 	if err != nil {
