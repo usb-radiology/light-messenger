@@ -47,16 +47,30 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 }
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
-	indexTemplateHTML, _ := ioutil.ReadFile("templates/index.html")
 
-	indexTpl := template.Must(template.New("index_view").Parse(string(indexTemplateHTML)))
+	indexTpl := template.Must(template.ParseFiles("templates/index.html"))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	data := map[string]interface{}{
-		"foo": "bar",
+	// AOD Card Template
+	aodData := map[string]interface{}{
+		"Modality":       "ct",
+		"Department":     "aod",
+		"PriorityNumber": 99,
 	}
-
-	render(w, r, indexTpl, "index_view", data)
+	var aodBuffer bytes.Buffer
+	aodCard := template.Must(template.ParseFiles("templates/card.html"))
+	aodErr := aodCard.Execute(&aodBuffer, aodData);
+	if aodErr != nil {
+		http.Error(w, aodErr.Error(), http.StatusInternalServerError)
+	}
+	data := map[string]interface{}{
+		"AOD": aodBuffer.String(),
+	}
+	err := indexTpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	//render(w, r, indexTpl, indexTpl, data)
 }
 
 func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {

@@ -25,8 +25,8 @@
       evt.currentTarget.className += " is-active";
     }
   </script>
-  <script src="/static/js/jquery-3.4.1.min.js"></script>    
-  <script src="/static/js/intercooler-1.2.2.js"></script>     
+  <script src="/static/js/jquery-3.4.1.min.js"></script>
+  <script src="/static/js/intercooler-1.2.2.js"></script>
 </head>
 
 <body>
@@ -64,28 +64,7 @@
     <div id="ct" class="content-tab">
       <div class="columns">
         <div class="column is-3">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                AOD
-              </p>
-              <div class="tags has-addons card-header-icon">
-              </div>
-            </header>
-            <div class="card-content">
-              <div class="content">
-                <a href="#" class="button is-rounded is-info is-small" disabled>Tiefe Prio</a>
-                <a href="#" class="button is-rounded is-warning is-small" disabled>Mittlere Prio</a>
-                <a href="#" class="button is-rounded is-danger is-small" disabled>Hohe Prio</a>
-              </div>
-            </div>
-            <footer class="card-footer">
-              <div class="card-footer-item columns">
-                <div class="column"><span class="is-size-7">Arduino Status</span></div>
-                <div class="column has-text-danger has-text-right"><i class="fa fa-ban"></i></div>
-              </div>
-            </footer>
-          </div>
+          {{ .AOD }}
         </div>
         <div class="column is-3">
           <div class="card" id="ct-ctd">
