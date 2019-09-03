@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"text/template"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/usb-radiology/light-messenger/src/configuration"
@@ -49,6 +50,7 @@ func arduinoStatusHandler(config *configuration.Configuration, w http.ResponseWr
 
 	status := lmdatabase.ArduinoStatus{
 		DepartmentID: department,
+		StatusAt: time.Now().Unix(),
 	}
 
 	errInsert := lmdatabase.InsertStatus(db, status)
@@ -76,10 +78,67 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	render(w, r, indexTpl, "index_view", data)
 }
 
+func priorityHandler(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error {
+	cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
+	cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	vars := mux.Vars(r)
+	modality := vars["modality"]
+	department := vars["department"]
+	priority := vars["priority"]
+
+	priorityMap := map[string]string{
+		"1": "is-danger",
+		"2": "is-warning",
+		"3": "is-info",
+	}
+	priorityNumber, _ := strconv.Atoi(priority)
+
+	arduinoStatus := lmdatabase.IsAlive(config, department, time.Now().Unix())
+
+	data := map[string]interface{}{
+		"Modality":       modality,
+		"Department":     department,
+		"Priority":       priority,
+		"PriorityName":   priorityMap[priority],
+		"PriorityNumber": priorityNumber,
+		"ArduinoStatus":  arduinoStatus,
+	}
+
+	if err := cardTpl.ExecuteTemplate(w, "card_view", data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
+}
+
+func cancelHandler(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error {
+	cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
+	cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	vars := mux.Vars(r)
+	modality := vars["modality"]
+	department := vars["department"]
+
+	data := map[string]interface{}{
+		"Modality":       modality,
+		"Department":     department,
+		"PriorityNumber": 99, // needed because of le comparison in template
+	}
+
+	if err := cardTpl.ExecuteTemplate(w, "card_view", data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
+}
+
 func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", mainHandler)
 	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
+	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
+	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	return r
 }

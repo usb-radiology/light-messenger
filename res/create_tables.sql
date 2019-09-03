@@ -1,6 +1,6 @@
 CREATE TABLE `ArduinoStatus` (
   `departmentId` varchar(255) NOT NULL,
-  `statusAt` varchar(255) NOT NULL,
+  `statusAt` bigint NOT NULL,
   PRIMARY KEY (`departmentId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

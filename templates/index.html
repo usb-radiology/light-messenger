@@ -11,7 +11,6 @@
 
 
   <script type="text/javascript">
-
     function openTab(evt, tabName) {
       var i, x, tablinks;
       x = document.getElementsByClassName("content-tab");
@@ -25,9 +24,9 @@
       document.getElementById(tabName).style.display = "block";
       evt.currentTarget.className += " is-active";
     }
-
-
   </script>
+  <script src="/static/js/jquery-3.4.1.min.js"></script>    
+  <script src="/static/js/intercooler-1.2.2.js"></script>     
 </head>
 
 <body>
@@ -61,10 +60,8 @@
       </div>
     </div>
   </section>
-
   <div class="container">
     <div id="ct" class="content-tab">
-
       <div class="columns">
         <div class="column is-3">
           <div class="card">
@@ -91,7 +88,7 @@
           </div>
         </div>
         <div class="column is-3">
-          <div class="card">
+          <div class="card" id="ct-ctd">
             <header class="card-header">
               <p class="card-header-title">
                 CTD
@@ -101,9 +98,9 @@
             </header>
             <div class="card-content">
               <div class="content">
-                <a href="#" class="button is-rounded is-info is-small">Tiefe Prio</a>
-                <a href="#" class="button is-rounded is-warning is-small">Mittlere Prio</a>
-                <a href="#" class="button is-rounded is-danger is-small">Hohe Prio</a>
+                <a href="#" class="button is-rounded is-info is-small" ic-target="#ct-ctd" ic-post-to="/modality/ct/department/ctd/prio/3">Tiefe Prio</a>
+                <a href="#" class="button is-rounded is-warning is-small" ic-target="#ct-ctd" ic-post-to="/modality/ct/department/ctd/prio/2">Mittlere Prio</a>
+                <a href="#" class="button is-rounded is-danger is-small" ic-target="#ct-ctd" ic-post-to="/modality/ct/department/ctd/prio/1">Hohe Prio</a>
               </div>
             </div>
             <footer class="card-footer">

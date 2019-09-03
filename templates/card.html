@@ -1,0 +1,37 @@
+<div class="card" id="{{ .Modality }}-{{ .Department }}">
+  <header class="card-header">
+    <p class="card-header-title is-uppercase">
+      {{ .Department}}
+    </p>
+    <div class="tags has-addons card-header-icon">
+      {{ if .PriorityName}}
+      <span class="tag {{ .PriorityName }}">Offen</span>
+      <span class="tag is-delete" ic-post-to="/modality/{{ .Modality}}/department/{{ .Department}}/cancel"
+        ic-target="#{{ .Modality }}-{{ .Department }}"></span>
+      {{ end}}
+    </div>
+  </header>
+  <div class="card-content">
+    <div class="content">
+      <a href="#" class="button is-rounded is-info is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
+        {{if le .PriorityNumber  3}} disabled {{else}}
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/3" {{end}}>Tiefe Prio</a>
+      <a href="#" class="button is-rounded is-warning is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
+        {{if le .PriorityNumber  2}} disabled {{else}}
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/2" {{end}}>Mittlere Prio</a>
+      <a href="#" class="button is-rounded is-danger is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
+        {{if le .PriorityNumber  1}} disabled {{else}}
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/1" {{end}}>Hohe Prio</a>
+    </div>
+  </div>
+  <footer class="card-footer">
+    <div class="card-footer-item columns">
+      <div class="column"><span class="is-size-7">Arduino Status</span></div>
+      {{ if .ArduinoStatus}}
+      <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
+      {{else}}
+      <div class="column has-text-danger has-text-right"><i class="fa fa-ban"></i></div>
+      {{end}}
+    </div>
+  </footer>
+</div>
