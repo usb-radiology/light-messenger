@@ -52,10 +52,15 @@ func mainHandler(config *configuration.Configuration, db *sql.DB, w http.Respons
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	data := map[string]interface{}{
-		"AOD": create(db, "ct", "aod"),
-		"CTD": create(db, "ct", "ctd"),
-		"MSK": create(db, "ct", "msk"),
-		"NR": create(db, "ct", "NR"),
+		"CT_AOD":  create(db, "ct", "aod"),
+		"CT_CTD":  create(db, "ct", "ctd"),
+		"CT_MSK":  create(db, "ct", "msk"),
+		"CT_NR":   create(db, "ct", "NR"),
+		"MR_AOD":  create(db, "mr", "aod"),
+		"MR_CTD":  create(db, "mr", "ctd"),
+		"MR_MSK":  create(db, "mr", "msk"),
+		"MR_NR":   create(db, "mr", "NR"),
+		"NUK_NUK": create(db, "nuk", "NUK"),
 	}
 	err := indexTpl.Execute(w, data)
 	if err != nil {

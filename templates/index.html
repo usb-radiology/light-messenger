@@ -64,39 +64,43 @@
     <div id="ct" class="content-tab">
       <div class="columns">
         <div class="column is-3">
-          {{ .AOD }}
+          {{ .CT_AOD }}
         </div>
         <div class="column is-3">
-          {{ .CTD}}
+          {{ .CT_CTD}}
         </div>
         <div class="column is-3">
-          {{ .MSK}}
+          {{ .CT_MSK}}
         </div>
         <div class="column is-3">
-          {{ .NR}}
+          {{ .CT_NR}}
         </div>
       </div>
     </div>
     <div id="mr" class="content-tab" style="display:none">
-      <p>
-        test2<br>
-        Details Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
-        industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled
-        it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic
-        typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
-        sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker
-        including versions of Lorem Ipsum.</p>
+      <div class="columns">
+        <div class="column is-3">
+          {{ .MR_AOD }}
+        </div>
+        <div class="column is-3">
+          {{ .MR_CTD}}
+        </div>
+        <div class="column is-3">
+          {{ .MR_MSK}}
+        </div>
+        <div class="column is-3">
+          {{ .MR_NR}}
+        </div>
+      </div>
     </div>
-    <div id="nuk" class="content-tab" style="display:none">
-      <p>
-        test3 <br>
-        Specification Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been
-        the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
-        scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into
-        electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of
-        Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus
-        PageMaker including versions of Lorem Ipsum.</p>
+  </div>
+  <div id="nuk" class="content-tab" style="display:none">
+    <div class="columns is-centered">
+      <div class="column is-3">
+        {{.NUK_NUK}}
+      </div>
     </div>
+  </div>
   </div>
 </body>
 
