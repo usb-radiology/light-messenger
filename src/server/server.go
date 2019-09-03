@@ -2,6 +2,8 @@ package server
 
 import (
 	"bytes"
+	"database/sql"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,19 +16,6 @@ import (
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
 
-type handler struct {
-	*configuration.Configuration
-	H func(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error
-}
-
-func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	err := h.H(h.Configuration, w, r)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-}
-
 // InitServer ...
 func InitServer(initConfig *configuration.Configuration) *http.Server {
 	port := strconv.Itoa(initConfig.Server.HTTPPort)
@@ -35,18 +24,10 @@ func InitServer(initConfig *configuration.Configuration) *http.Server {
 	return server
 }
 
-func arduinoStatusHandler(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error {
+func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 	vars := mux.Vars(r)
 	department := vars["department"]
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	db, errDB := lmdatabase.GetDB(config)
-	if errDB != nil {
-		log.Fatal(errDB)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Something bad happened!"))
-		return errDB
-	}
 
 	status := lmdatabase.ArduinoStatus{
 		DepartmentID: department,
@@ -61,7 +42,7 @@ func arduinoStatusHandler(config *configuration.Configuration, w http.ResponseWr
 		return errInsert
 	}
 
-	w.Write([]byte(department))
+	w.Write([]byte(fmt.Sprintf("%+v", status)))
 	return nil
 }
 
@@ -78,7 +59,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	render(w, r, indexTpl, "index_view", data)
 }
 
-func priorityHandler(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error {
+func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 	cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
 	cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -94,14 +75,6 @@ func priorityHandler(config *configuration.Configuration, w http.ResponseWriter,
 		"3": "is-info",
 	}
 	priorityNumber, _ := strconv.Atoi(priority)
-
-	db, errDB := lmdatabase.GetDB(config)
-	if errDB != nil {
-		log.Fatal(errDB)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Something bad happened!"))
-		return errDB
-	}
 
 	arduinoStatus, errInsert := lmdatabase.IsAlive(db, department, time.Now().Unix())
 	if errInsert != nil {
@@ -126,7 +99,7 @@ func priorityHandler(config *configuration.Configuration, w http.ResponseWriter,
 	return nil
 }
 
-func cancelHandler(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error {
+func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 	cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
 	cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
