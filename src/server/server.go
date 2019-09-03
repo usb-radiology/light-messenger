@@ -10,84 +10,77 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/usb-radiology/light-messenger/src/configuration"
-	"github.com/usb-radiology/light-messenger/src/db"
+	lmdatabase "github.com/usb-radiology/light-messenger/src/db"
 )
+
+type handler struct {
+	*configuration.Configuration
+	H func(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error
+}
+
+func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	err := h.H(h.Configuration, w, r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
+	}
+}
 
 // InitServer ...
 func InitServer(initConfig *configuration.Configuration) *http.Server {
-
 	port := strconv.Itoa(initConfig.Server.HTTPPort)
-
 	r := getRouter(initConfig)
-
 	server := &http.Server{Addr: ":" + port, Handler: r}
-
-	// log.Println("Server listening on " + port)
-	// log.Fatal(http.ListenAndServe(":"+port, nil))
-	// log.Fatal(http.ListenAndServe(":"+port, r))
-
 	return server
 }
 
+func arduinoStatusHandler(config *configuration.Configuration, w http.ResponseWriter, r *http.Request) error {
+	vars := mux.Vars(r)
+	department := vars["department"]
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-// getRouter ...
-func getRouter(initConfig *configuration.Configuration) *mux.Router {
-
-	r := mux.NewRouter()
-
-	r.HandleFunc("/nce-rest/arduino-status/{department}-status", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		department := vars["department"]
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-		db, errDB := lmdatabase.GetDB(initConfig)
-		if errDB != nil {
-			log.Fatal(errDB)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Something bad happened!"))
-			return
-		}
-
-		status := lmdatabase.ArduinoStatus{
-			DepartmentID:    department,
-		}
-
-		errInsert := lmdatabase.InsertStatus(db, status)
-		if errInsert != nil {
-			log.Fatal(errInsert)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Something bad happened!"))
-			return
-		}
-
-		w.Write([]byte(department))
-	})
-
-	// r.Use(loggingMiddleware)
-
-	indexTemplateHTML, readFileErr := ioutil.ReadFile("templates/index.html")
-	if readFileErr != nil {
-		log.Fatal(readFileErr)
-		return nil
+	db, errDB := lmdatabase.GetDB(config)
+	if errDB != nil {
+		log.Fatal(errDB)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return errDB
 	}
 
+	status := lmdatabase.ArduinoStatus{
+		DepartmentID: department,
+	}
+
+	errInsert := lmdatabase.InsertStatus(db, status)
+	if errInsert != nil {
+		log.Fatal(errInsert)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return errInsert
+	}
+
+	w.Write([]byte(department))
+	return nil
+}
+
+func mainHandler(w http.ResponseWriter, r *http.Request) {
+	indexTemplateHTML, _ := ioutil.ReadFile("templates/index.html")
+
 	indexTpl := template.Must(template.New("index_view").Parse(string(indexTemplateHTML)))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// routes
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	data := map[string]interface{}{
+		"foo": "bar",
+	}
 
-		data := map[string]interface{}{
-			"foo": "bar",
-		}
+	render(w, r, indexTpl, "index_view", data)
+}
 
-		render(w, r, indexTpl, "index_view", data)
-	})
-
+func getRouter(initConfig *configuration.Configuration) *mux.Router {
+	r := mux.NewRouter()
+	r.HandleFunc("/", mainHandler)
+	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-
-	// log.Printf("%+v", routerAPI)
-
 	return r
 }
 
