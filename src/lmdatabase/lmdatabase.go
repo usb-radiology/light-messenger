@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"strconv"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // mysql driver ..
+	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 )
 
@@ -12,6 +13,18 @@ import (
 func GetDB(initConfig *configuration.Configuration) (*sql.DB, error) {
 	conn := initConfig.Database.Username + ":" + initConfig.Database.Password + "@tcp(" + initConfig.Database.Host + ":" + strconv.Itoa(initConfig.Database.Port) + ")/" + initConfig.Database.DBName
 	return sql.Open("mysql", conn)
+}
+
+func execStatements(db *sql.DB, sqlStatements []string) error {
+
+	for _, statement := range sqlStatements {
+		_, err := db.Exec(statement)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ArduinoStatus ..
@@ -43,27 +56,28 @@ func InsertStatus(db *sql.DB, status ArduinoStatus) error {
 	return nil
 }
 
-// IsAslive ...
-func IsAlive(config *configuration.Configuration, department string, now int64) error {
-	// Prepare statement for inserting data
-	db, _ := GetDB(config)
+// IsAlive ..
+func IsAlive(db *sql.DB, department string, now int64) (*ArduinoStatus, error) {
 
-	stmtIns, err := db.Prepare(`
-	SELECT * FROM 
+	queryStr := `
+	SELECT departmentId, statusAt FROM 
 		ArduinoStatus 
 	WHERE
 		departmentId = ?
 	AND 
-		statusAt > ?`)
+		statusAt > ?`
 
-	if err != nil {
-		return err
+	row := db.QueryRow(queryStr, department, now-300)
+
+	var result ArduinoStatus
+
+	errRowScan := row.Scan(&result.DepartmentID, &result.StatusAt)
+	if errRowScan != nil {
+		if errRowScan == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errors.Wrap(errRowScan, "error retrieving result")
 	}
 
-	defer stmtIns.Close()
-	_, errExec := stmtIns.Exec(department, now - 300)
-	if errExec != nil {
-		return errExec
-	}
-	return nil
+	return &result, nil
 }

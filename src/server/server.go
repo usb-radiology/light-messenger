@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/usb-radiology/light-messenger/src/configuration"
-	lmdatabase "github.com/usb-radiology/light-messenger/src/db"
+	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
 
 type handler struct {
@@ -50,7 +50,7 @@ func arduinoStatusHandler(config *configuration.Configuration, w http.ResponseWr
 
 	status := lmdatabase.ArduinoStatus{
 		DepartmentID: department,
-		StatusAt: time.Now().Unix(),
+		StatusAt:     time.Now().Unix(),
 	}
 
 	errInsert := lmdatabase.InsertStatus(db, status)
@@ -95,7 +95,21 @@ func priorityHandler(config *configuration.Configuration, w http.ResponseWriter,
 	}
 	priorityNumber, _ := strconv.Atoi(priority)
 
-	arduinoStatus := lmdatabase.IsAlive(config, department, time.Now().Unix())
+	db, errDB := lmdatabase.GetDB(config)
+	if errDB != nil {
+		log.Fatal(errDB)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return errDB
+	}
+
+	arduinoStatus, errInsert := lmdatabase.IsAlive(db, department, time.Now().Unix())
+	if errInsert != nil {
+		log.Fatal(errInsert)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return errInsert
+	}
 
 	data := map[string]interface{}{
 		"Modality":       modality,
