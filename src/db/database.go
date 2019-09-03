@@ -18,22 +18,27 @@ func GetDB(initConfig *configuration.Configuration) (*sql.DB, error) {
 
 // ArduinoStatus ..
 type ArduinoStatus struct {
-	ArduinoStatusID string
-	DepartmentID    string
-	StatusAt        string
+	DepartmentID string
+	StatusAt     string
 }
 
 // InsertStatus ..
 func InsertStatus(db *sql.DB, status ArduinoStatus) error {
 
 	// Prepare statement for inserting data
-	stmtIns, err := db.Prepare("INSERT INTO ArduinoStatus VALUES( ?, ?, ? )")
+	stmtIns, err := db.Prepare(`
+	INSERT INTO 
+		ArduinoStatus 
+	VALUES( ?, NOW() ) 
+		ON DUPLICATE KEY UPDATE 
+	statusAt = NOW()`)
+
 	if err != nil {
 		return err
 	}
 
 	defer stmtIns.Close()
-	_, errExec := stmtIns.Exec(status.ArduinoStatusID, status.DepartmentID, status.StatusAt)
+	_, errExec := stmtIns.Exec(status.DepartmentID)
 	if errExec != nil {
 		return errExec
 	}

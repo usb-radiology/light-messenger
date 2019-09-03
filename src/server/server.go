@@ -29,13 +29,13 @@ func InitServer(initConfig *configuration.Configuration) *http.Server {
 	return server
 }
 
+
 // getRouter ...
 func getRouter(initConfig *configuration.Configuration) *mux.Router {
 
 	r := mux.NewRouter()
 
-	arduinoRouter := r.PathPrefix("/nce-rest/arduino-status/").Subrouter()
-	arduinoRouter.HandleFunc("/{department}-status", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/nce-rest/arduino-status/{department}-status", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		department := vars["department"]
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -49,9 +49,7 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 		}
 
 		status := lmdatabase.ArduinoStatus{
-			ArduinoStatusID: "1",
 			DepartmentID:    department,
-			StatusAt:        "xxx",
 		}
 
 		errInsert := lmdatabase.InsertStatus(db, status)
