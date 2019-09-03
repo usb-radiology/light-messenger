@@ -76,6 +76,15 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 	}
 	priorityNumber, _ := strconv.Atoi(priority)
 
+	errInsertNotification := lmdatabase.InsertNotification(db, department, priorityNumber, modality, time.Now().Unix())
+	
+	if errInsertNotification != nil {
+		log.Fatal(errInsertNotification)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return errInsertNotification
+	}
+
 	arduinoStatus, errInsert := lmdatabase.IsAlive(db, department, time.Now().Unix())
 	if errInsert != nil {
 		log.Fatal(errInsert)

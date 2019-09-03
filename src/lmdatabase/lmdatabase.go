@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver ..
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 )
@@ -31,6 +32,16 @@ func execStatements(db *sql.DB, sqlStatements []string) error {
 type ArduinoStatus struct {
 	DepartmentID string
 	StatusAt     int64
+}
+
+// Notification ..
+type Notification struct {
+	NotificationID string
+	DepartmentID   string
+	Priority       int
+	Modality       string
+	CreatedAt      int64
+	ConfirmedAt    int64
 }
 
 // InsertStatus ..
@@ -80,4 +91,24 @@ func IsAlive(db *sql.DB, department string, now int64) (*ArduinoStatus, error) {
 	}
 
 	return &result, nil
+}
+
+// InsertNotification ..
+func InsertNotification(db *sql.DB, department string, priority int, modality string, createdAt int64) error {
+	// Prepare statement for inserting data
+	stmtIns, err := db.Prepare(`
+	INSERT INTO 
+		Notification (notificationId, departmentId, priority, modality, createdAt)
+	VALUES( ?, ? , ?, ?, ?) `)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmtIns.Close()
+	_, errExec := stmtIns.Exec(uuid.New().String(), department, priority, modality, createdAt)
+	if errExec != nil {
+		return errors.Wrap(errExec, "fu")
+	}
+	return nil
 }
