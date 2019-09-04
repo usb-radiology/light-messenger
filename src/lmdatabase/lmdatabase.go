@@ -116,7 +116,7 @@ func InsertNotification(db *sql.DB, department string, priority int, modality st
 func QueryNotification(db *sql.DB, modality string, department string) (*Notification, error) {
 	queryStr :=
 		`SELECT
-			notificationId, modality, departmentId, priority
+			notificationId, modality, departmentId, priority, createdAt
 		FROM
 			Notification
 		WHERE
@@ -130,7 +130,7 @@ func QueryNotification(db *sql.DB, modality string, department string) (*Notific
 
 	row := db.QueryRow(queryStr, modality, department)
 	var result Notification
-	errRowScan := row.Scan(&result.NotificationID, &result.Modality, &result.DepartmentID, &result.Priority)
+	errRowScan := row.Scan(&result.NotificationID, &result.Modality, &result.DepartmentID, &result.Priority, &result.CreatedAt)
 	if errRowScan != nil {
 		if errRowScan == sql.ErrNoRows {
 			result.Modality = modality
@@ -148,7 +148,7 @@ func QueryNotification(db *sql.DB, modality string, department string) (*Notific
 func QueryNotifications(db *sql.DB, department string) (*[]Notification, error) {
 	queryStr :=
 		`SELECT
-			notificationId, modality, departmentId, priority
+			notificationId, modality, departmentId, priority, createdAt
 		FROM
 			Notification
 		WHERE
@@ -166,7 +166,7 @@ func QueryNotifications(db *sql.DB, department string) (*[]Notification, error) 
 
 	for rows.Next() {
 		var notification Notification
-		if err := rows.Scan(&notification.NotificationID, &notification.Modality, &notification.DepartmentID, &notification.Priority); err != nil {
+		if err := rows.Scan(&notification.NotificationID, &notification.Modality, &notification.DepartmentID, &notification.Priority, &notification.CreatedAt); err != nil {
 			log.Fatal(err)
 		}
 		openNotifications = append(openNotifications, notification)

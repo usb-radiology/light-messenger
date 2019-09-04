@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"text/template"
+	"time"
 
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
@@ -18,6 +19,7 @@ func create(db *sql.DB, modality string, department string) string {
 		"Department":     notification.DepartmentID,
 		"PriorityNumber": notification.Priority,
 		"PriorityName":   priorityName(notification.Priority),
+		"CreatedAt":      time.Unix(notification.CreatedAt, 0).Format("15:04:05"),
 	}
 	var aodBuffer bytes.Buffer
 	aodCard := template.Must(template.ParseFiles("templates/card.html"))

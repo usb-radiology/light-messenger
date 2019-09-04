@@ -5,7 +5,8 @@
     </p>
     <div class="tags has-addons card-header-icon">
       {{ if .PriorityName}}
-      <span class="tag {{ .PriorityName }}">Offen</span>
+      <span class="tag {{ .PriorityName }}" title="Seit {{.CreatedAt}}">Offen</span>
+      <span class="tag is-dark" title="Seit {{.CreatedAt}}">{{ .CreatedAt }}</span>
       <span class="tag is-delete" ic-post-to="/modality/{{ .Modality}}/department/{{ .Department}}/cancel"
         ic-target="#{{ .Modality }}-{{ .Department }}" title="Visierung zurücknehmen"></span>
       {{ end}}

@@ -3,15 +3,14 @@ package server
 import (
 	"bytes"
 	"database/sql"
-	"log"
 	"text/template"
+	"time"
 
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
 
 func createNotificationTmpl(db *sql.DB, department string) string {
 	notifications, _ := lmdatabase.QueryNotifications(db, department)
-	log.Print(notifications, "------")
 	funcMap := template.FuncMap{
 		"priorityMap": func(prio int) string {
 			priorityMap := map[int]string{
@@ -20,6 +19,9 @@ func createNotificationTmpl(db *sql.DB, department string) string {
 				3: "is-info",
 			}
 			return priorityMap[prio]
+		},
+		"now": func(now int64) string {
+			return time.Unix(now, 0).Format("15:04:05")
 		},
 	}
 	data := map[string]interface{}{

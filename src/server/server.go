@@ -100,7 +100,7 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 	department := vars["department"]
 
 	log.Print("radiologieHandler ", department)
-	
+
 	data := map[string]interface{}{
 		"Department":    department,
 		"Notifications": createNotificationTmpl(db, department),
@@ -131,8 +131,9 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 	priorityNumber, _ := strconv.Atoi(priority)
 
 	notification, _ := lmdatabase.QueryNotification(db, modality, department)
+	now := time.Now().Unix()
 	if notification.NotificationID == "" {
-		errInsertNotification := lmdatabase.InsertNotification(db, department, priorityNumber, modality, time.Now().Unix())
+		errInsertNotification := lmdatabase.InsertNotification(db, department, priorityNumber, modality, now)
 		if errInsertNotification != nil {
 			log.Fatal(errInsertNotification)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -143,7 +144,7 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 		lmdatabase.UpdateNotification(db, notification.NotificationID, priorityNumber)
 	}
 
-	arduinoStatus, errInsert := lmdatabase.IsAlive(db, department, time.Now().Unix())
+	arduinoStatus, errInsert := lmdatabase.IsAlive(db, department, now)
 	if errInsert != nil {
 		log.Fatal(errInsert)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -158,6 +159,7 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 		"PriorityName":   priorityMap[priority],
 		"PriorityNumber": priorityNumber,
 		"ArduinoStatus":  arduinoStatus,
+		"CreatedAt":      time.Unix(now, 0).Format("15:04:05"),
 	}
 
 	if err := cardTpl.ExecuteTemplate(w, "card_view", data); err != nil {
