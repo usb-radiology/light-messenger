@@ -7,7 +7,7 @@
       {{ if .PriorityName}}
       <span class="tag {{ .PriorityName }}">Offen</span>
       <span class="tag is-delete" ic-post-to="/modality/{{ .Modality}}/department/{{ .Department}}/cancel"
-        ic-target="#{{ .Modality }}-{{ .Department }}"></span>
+        ic-target="#{{ .Modality }}-{{ .Department }}" title="Visierung zurücknehmen"></span>
       {{ end}}
     </div>
   </header>
@@ -15,22 +15,22 @@
     <div class="content">
       <a href="#" class="button is-rounded is-info is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  3}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/3" {{end}}>Tiefe Prio</a>
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/3" {{end}} title="Visierung mit tiefer Priorität erstellen">Tiefe Prio</a>
       <a href="#" class="button is-rounded is-warning is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  2}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/2" {{end}}>Mittlere Prio</a>
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/2" {{end}} title="Visierung mit mittlerer Priorität erstellen">Mittlere Prio</a>
       <a href="#" class="button is-rounded is-danger is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  1}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/1" {{end}}>Hohe Prio</a>
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/1" {{end}} title="Visierung mit hoher Priorität erstellen">Hohe Prio</a>
     </div>
   </div>
   <footer class="card-footer">
     <div class="card-footer-item columns">
       <div class="column"><span class="is-size-7">Arduino Status</span></div>
       {{ if .ArduinoStatus}}
-      <div class="column has-text-success has-text-right"><i class="fa fa-signal"></i></div>
+      <div class="column has-text-success has-text-right"><i class="fa fa-signal" title="Arduino verbunden"></i></div>
       {{else}}
-      <div class="column has-text-danger has-text-right"><i class="fa fa-ban"></i></div>
+      <div class="column has-text-danger has-text-right"><i class="fa fa-ban" title="Kein Signal vom Arduino"></i></div>
       {{end}}
     </div>
   </footer>

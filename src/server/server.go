@@ -41,7 +41,6 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 		w.Write([]byte("500 - Something bad happened!"))
 		return errInsert
 	}
-
 	w.Write([]byte(fmt.Sprintf("%+v", status)))
 	return nil
 }
@@ -51,19 +50,64 @@ func mainHandler(config *configuration.Configuration, db *sql.DB, w http.Respons
 	indexTpl := template.Must(template.ParseFiles("templates/index.html"))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
+	data := map[string]interface{}{}
+	err := indexTpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
+}
+
+func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+	indexTpl := template.Must(template.ParseFiles("templates/visierung.html"))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	vars := mux.Vars(r)
+	modality := vars["modality"]
+
 	data := map[string]interface{}{
-		"CT_AOD":  create(db, "ct", "aod"),
-		"CT_CTD":  create(db, "ct", "ctd"),
-		"CT_MSK":  create(db, "ct", "msk"),
-		"CT_NR":   create(db, "ct", "NR"),
-		"MR_AOD":  create(db, "mr", "aod"),
-		"MR_CTD":  create(db, "mr", "ctd"),
-		"MR_MSK":  create(db, "mr", "msk"),
-		"MR_NR":   create(db, "mr", "NR"),
-		"NUK_NUK": create(db, "nuk", "NUK"),
+		"Modality": modality,
+		"AOD":      create(db, modality, "aod"),
+		"CTD":      create(db, modality, "ctd"),
+		"MSK":      create(db, modality, "msk"),
+		"NR":       create(db, modality, "nr"),
+		"NUK_NUK":  create(db, "nuk", "NUK"),
 	}
 	err := indexTpl.Execute(w, data)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
+}
+
+func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+	
+	funcMap := template.FuncMap{
+		"priorityMap": func(prio int) string {
+			priorityMap := map[int]string{
+				1: "is-danger",
+				2: "is-warning",
+				3: "is-info",
+			}
+			return priorityMap[prio]
+		},
+	}
+	indexTpl,_ := template.New("radiologie.html").Funcs(funcMap).ParseFiles("templates/radiologie.html")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	vars := mux.Vars(r)
+	department := vars["department"]
+
+	notifications, _ := lmdatabase.QueryNotifications(db, department)
+
+	data := map[string]interface{}{
+		"Department":    department,
+		"Notifications": notifications,
+	}
+	log.Print(notifications)
+	err := indexTpl.Execute(w, data)
+	if err != nil {
+		log.Fatal(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
@@ -148,6 +192,8 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r := mux.NewRouter()
 	r.Handle("/", handler{initConfig, mainHandler})
+	r.Handle("/mta/{modality}", handler{initConfig, visierungHandler})
+	r.Handle("/radiologie/{department}", handler{initConfig, radiologieHandler})
 	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
 	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
 	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})

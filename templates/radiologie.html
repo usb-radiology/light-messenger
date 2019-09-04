@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USB KRN light-messenger</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/static/css/bulma-0.7.5.css" />
+
+  <script src="/static/js/jquery-3.4.1.min.js"></script>
+  <script src="/static/js/intercooler-1.2.2.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand"><a class="navbar-item" href="/">
+          <figure class="image is-24x24"><img src="/static/images/usb-logo.png" alt="logo"></figure>&nbsp;
+          Light
+          Messenger
+        </a><a role="button" class="navbar-burger burger" aria-label="menu" data-target="navbarBasicExample"
+          href="#"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></a>
+      </div>
+      <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="tooltip is-tooltip-bottom" data-tooltip="2019-08-08 09:41:53"><span
+                class="tag is-dark">v1.0.0</span></div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <div class="container">
+    <section class="section">
+      <h1 class="title">Abteilung <span class="is-uppercase">{{ .Department}}</span></h1>
+      <h2 class="subtitle">Ausstehendene Visierungen</h2>
+      <div class="container">
+        {{ range $n := .Notifications}}
+        <div class="field is-grouped is-family-monospace">
+          <div class="control">
+            <div class="tags has-addons">
+              <span class="tag {{ priorityMap .Priority }} is-large">Offen</span>
+              <span class="tag is-dark is-large is-uppercase">{{.Modality}}</span>
+            </div>
+          </div>
+          <div class="control">
+            <div class="tags has-addons">
+              <a class="tag is-success is-large"><span>Bestätigen</span>
+                <span class="icon is-small">
+                  <i class="fa fa-check"></i>
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </section>
+  </div>
+
+</body>
+
+</html>

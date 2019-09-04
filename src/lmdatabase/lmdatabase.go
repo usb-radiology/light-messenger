@@ -144,6 +144,36 @@ func QueryNotification(db *sql.DB, modality string, department string) (*Notific
 	return &result, nil
 }
 
+// QueryNotifications ..
+func QueryNotifications(db *sql.DB, department string) (*[]Notification, error) {
+	queryStr :=
+		`SELECT
+			notificationId, modality, departmentId, priority
+		FROM
+			Notification
+		WHERE
+			departmentId = ?
+		AND
+			cancelledAt IS NULL
+		AND
+			confirmedAt IS NULL`
+
+	rows, err := db.Query(queryStr, department)
+	if err != nil {
+		log.Fatal(err)
+	}
+	openNotifications := make([]Notification, 0)
+
+	for rows.Next() {
+		var notification Notification
+		if err := rows.Scan(&notification.NotificationID, &notification.Modality, &notification.DepartmentID, &notification.Priority); err != nil {
+			log.Fatal(err)
+		}
+		openNotifications = append(openNotifications, notification)
+	}
+	return &openNotifications, nil
+}
+
 // CancelNotification ..
 func CancelNotification(db *sql.DB, modality string, department string, cancelledAt int64) error {
 	stmtIns, err := db.Prepare(`

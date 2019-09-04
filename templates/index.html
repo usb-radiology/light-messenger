@@ -49,59 +49,23 @@
     </nav>
   </div>
 
-  <section class="section">
-    <div class="container">
-      <div class="tabs is-boxed is-centered">
-        <ul>
-          <li class="tab is-active" onclick="openTab(event,'ct')"><a>Visierung CT</a></li>
-          <li class="tab" onclick="openTab(event,'mr')"><a>Visierung MR</a></li>
-          <li class="tab" onclick="openTab(event,'nuk')"><a>Visierung NUK</a></li>
-        </ul>
-      </div>
-    </div>
-  </section>
   <div class="container">
-    <div id="ct" class="content-tab">
-      <div class="columns" style="background-color: #6D9274">
-        <div class="column is-3">
-          {{ .CT_AOD }}
-        </div>
-        <div class="column is-3">
-          {{ .CT_CTD}}
-        </div>
-        <div class="column is-3">
-          {{ .CT_MSK}}
-        </div>
-        <div class="column is-3">
-          {{ .CT_NR}}
-        </div>
+    <div class="section">
+      <div class="content">
+        <h1 class="title">Für MTAs</h1>
+        <a class="button is-large is-link" href="/mta/ct">Visierung CT</a>
+        <a class="button is-large is-link" href="/mta/mr">Visierung MR</a>
+        <a class="button is-large is-link" href="/mta/nuk">Visierung NUK</a>
+      </div>
+      <div class="content">
+        <h1 class="title">Für Radiologen</h1>
+        <a class="button is-large is-info" href="/radiologie/aod">AOD</a>
+        <a class="button is-large is-info" href="/radiologie/ctd">CTD</a>
+        <a class="button is-large is-info" href="/radiologie/msk">MSK</a>
+        <a class="button is-large is-info" href="/radiologie/nr">NR</a>
+        <a class="button is-large is-info" href="/radiologie/nuk">NUK</a>
       </div>
     </div>
-    <div id="mr" class="content-tab" style="display:none">
-      <div class="columns" style="background-color: #6D7892">
-        <div class="column is-3">
-          {{ .MR_AOD }}
-        </div>
-        <div class="column is-3">
-          {{ .MR_CTD}}
-        </div>
-        <div class="column is-3">
-          {{ .MR_MSK}}
-        </div>
-        <div class="column is-3">
-          {{ .MR_NR}}
-        </div>
-      </div>
-    </div>
-  </div>
-  <div id="nuk" class="content-tab" style="display:none">
-    <div class="columns is-centered" >
-      <div class="column is-3" style="background-color: #926D8B">
-        {{.NUK_NUK}}
-      </div>
-    </div>
-  </div>
-  </div>
 </body>
 
 </html>
