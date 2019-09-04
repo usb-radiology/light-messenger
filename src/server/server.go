@@ -80,31 +80,31 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 	return nil
 }
 
+func confirmHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("X-IC-Remove", "true")
+	vars := mux.Vars(r)
+	department := vars["department"]
+	notificationID := vars["id"]
+	log.Print("confirmHandler ", department, ", ", notificationID)
+	lmdatabase.ConfirmNotification(db, notificationID, time.Now().Unix())
+	return nil
+}
+
 func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
-	
-	funcMap := template.FuncMap{
-		"priorityMap": func(prio int) string {
-			priorityMap := map[int]string{
-				1: "is-danger",
-				2: "is-warning",
-				3: "is-info",
-			}
-			return priorityMap[prio]
-		},
-	}
-	indexTpl,_ := template.New("radiologie.html").Funcs(funcMap).ParseFiles("templates/radiologie.html")
+
+	indexTpl, _ := template.New("radiologie.html").ParseFiles("templates/radiologie.html")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	vars := mux.Vars(r)
 	department := vars["department"]
 
-	notifications, _ := lmdatabase.QueryNotifications(db, department)
-
+	log.Print("radiologieHandler ", department)
+	
 	data := map[string]interface{}{
 		"Department":    department,
-		"Notifications": notifications,
+		"Notifications": createNotificationTmpl(db, department),
 	}
-	log.Print(notifications)
 	err := indexTpl.Execute(w, data)
 	if err != nil {
 		log.Fatal(err)
@@ -195,6 +195,7 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r.Handle("/mta/{modality}", handler{initConfig, visierungHandler})
 	r.Handle("/radiologie/{department}", handler{initConfig, radiologieHandler})
 	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
+	r.Handle("/notification/{department}/{id}", handler{initConfig, confirmHandler})
 	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
 	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))

@@ -223,3 +223,25 @@ func UpdateNotification(db *sql.DB, notificationID string, priority int) error {
 	}
 	return nil
 }
+
+// ConfirmNotification ..
+func ConfirmNotification(db *sql.DB, notificationID string, now int64) error {
+	stmtIns, err := db.Prepare(`
+	UPDATE
+		Notification
+	SET
+		confirmedAt = ?
+	WHERE
+		notificationId = ?`)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmtIns.Close()
+	_, errExec := stmtIns.Exec(now, notificationID)
+	if errExec != nil {
+		return errors.Wrap(errExec, "error updating notification")
+	}
+	return nil
+}

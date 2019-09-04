@@ -38,25 +38,7 @@
       <h1 class="title">Abteilung <span class="is-uppercase">{{ .Department}}</span></h1>
       <h2 class="subtitle">Ausstehendene Visierungen</h2>
       <div class="container">
-        {{ range $n := .Notifications}}
-        <div class="field is-grouped is-family-monospace">
-          <div class="control">
-            <div class="tags has-addons">
-              <span class="tag {{ priorityMap .Priority }} is-large">Offen</span>
-              <span class="tag is-dark is-large is-uppercase">{{.Modality}}</span>
-            </div>
-          </div>
-          <div class="control">
-            <div class="tags has-addons">
-              <a class="tag is-success is-large"><span>Bestätigen</span>
-                <span class="icon is-small">
-                  <i class="fa fa-check"></i>
-                </span>
-              </a>
-            </div>
-          </div>
-        </div>
-        {{end}}
+        {{ .Notifications}}
       </div>
     </section>
   </div>

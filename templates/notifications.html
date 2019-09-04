@@ -1,0 +1,24 @@
+{{ range $n := .Notifications}}
+<div class="content">
+  <div id="{{ .NotificationID }}">
+    <div class="field is-grouped is-family-monospace">
+      <div class="control">
+        <div class="tags has-addons">
+          <span class="tag {{ priorityMap .Priority }} is-large">Offen</span>
+          <span class="tag is-dark is-large is-uppercase">{{.Modality}}</span>
+        </div>
+      </div>
+      <div class="control">
+        <div class="tags has-addons">
+          <a class="tag is-success is-large" ic-delete-from="/notification/{{ .DepartmentID }}/{{ .NotificationID }}"
+            ic-target="#{{ .NotificationID }}" "><span>Bestätigen</span>
+                  <span class=" icon is-small">
+            <i class="fa fa-check"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
