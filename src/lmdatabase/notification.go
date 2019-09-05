@@ -40,7 +40,7 @@ func NotificationInsert(db *sql.DB, department string, priority int, modality st
 func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modality string) (*Notification, error) {
 	queryStr :=
 		`SELECT
-			notificationId, modality, departmentId, priority, createdAt
+			notificationId, departmentId, modality, priority, createdAt
 		FROM
 			Notification
 		WHERE
@@ -52,7 +52,7 @@ func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modal
 		AND
 			confirmedAt IS NULL`
 
-	row := db.QueryRow(queryStr, modality, department)
+	row := db.QueryRow(queryStr, department, modality)
 
 	var result Notification
 	errRowScan := row.Scan(&result.NotificationID, &result.DepartmentID, &result.Modality, &result.Priority, &result.CreatedAt)

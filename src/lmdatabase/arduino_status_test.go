@@ -33,7 +33,7 @@ func TestIntegrationShouldInsertArduinoStatusWhenNoneExisting(t *testing.T) {
 	result, errQuery := ArduinoStatusQueryWithin5MinutesFromNow(db, departmentID, now)
 
 	if errQuery != nil {
-		t.Fatal(errQuery)
+		t.Fatalf("%+v", errors.WithStack(errQuery))
 	}
 
 	if result == nil {
