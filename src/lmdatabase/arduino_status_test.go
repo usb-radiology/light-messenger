@@ -1,43 +1,13 @@
 package lmdatabase
 
 import (
-	"database/sql"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/usb-radiology/light-messenger/src/configuration"
 )
 
-func setUp(t *testing.T) *sql.DB {
-	initConfig, err := configuration.LoadAndSetConfiguration("../../config-sample.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, errDb := GetDB(initConfig)
-	if errDb != nil {
-		t.Fatal(errDb)
-	}
-
-	sqlFilePath := filepath.Join("..", "..", "res", "create_tables.sql")
-
-	fileContents, errFileRead := ioutil.ReadFile(sqlFilePath)
-	if err != nil {
-		t.Fatal(errFileRead)
-	}
-
-	statements := strings.Split(string(fileContents), ";")
-
-	execStatements(db, statements)
-
-	return db
-}
-
-func TestIntegrationShouldUpdateArduinoStatus(t *testing.T) {
+func TestIntegrationShouldInsertArduinoStatusWhenNoneExisting(t *testing.T) {
 
 	// given
 	db := setUp(t)
@@ -48,13 +18,15 @@ func TestIntegrationShouldUpdateArduinoStatus(t *testing.T) {
 
 	arduinoStatus := ArduinoStatus{
 		DepartmentID: departmentID,
-		StatusAt:     now - 10,
+		StatusAt:     now - 299,
 	}
 
 	// when
-	errInsert := ArduinoStatusInsert(db, arduinoStatus)
-	if errInsert != nil {
-		t.Fatalf("%+v", errors.WithStack(errInsert))
+	{
+		errInsert := ArduinoStatusInsert(db, arduinoStatus)
+		if errInsert != nil {
+			t.Fatalf("%+v", errors.WithStack(errInsert))
+		}
 	}
 
 	// then
@@ -72,4 +44,90 @@ func TestIntegrationShouldUpdateArduinoStatus(t *testing.T) {
 	assert.Equal(t, result.DepartmentID, arduinoStatus.DepartmentID)
 	assert.Equal(t, result.StatusAt, arduinoStatus.StatusAt)
 
+}
+
+func TestIntegrationShouldInsertArduinoStatusWhenExists(t *testing.T) {
+
+	// given
+	db := setUp(t)
+
+	departmentID := "abc"
+	var now, update int64
+	now = 1000
+	update = 2000
+
+	arduinoStatus := ArduinoStatus{
+		DepartmentID: departmentID,
+		StatusAt:     now - 299,
+	}
+
+	arduinoStatusUpdate := ArduinoStatus{
+		DepartmentID: departmentID,
+		StatusAt:     update,
+	}
+
+	{
+		errInsert := ArduinoStatusInsert(db, arduinoStatus)
+		if errInsert != nil {
+			t.Fatalf("%+v", errors.WithStack(errInsert))
+		}
+	}
+
+	// when
+	{
+		errUpdate := ArduinoStatusInsert(db, arduinoStatusUpdate)
+		if errUpdate != nil {
+			t.Fatalf("%+v", errors.WithStack(errUpdate))
+		}
+	}
+
+	// then
+	result, errQuery := ArduinoStatusQueryWithin5MinutesFromNow(db, departmentID, update)
+
+	if errQuery != nil {
+		t.Fatal(errQuery)
+	}
+
+	if result == nil {
+		t.Errorf("Did not retrieve any rows")
+	}
+
+	// fmt.Printf("%+v\n", result)
+	assert.Equal(t, result.DepartmentID, arduinoStatus.DepartmentID)
+	assert.Equal(t, result.StatusAt, arduinoStatusUpdate.StatusAt)
+
+}
+
+func TestIntegrationShouldNotRetrieveArduinoStatusWhenOlderThan5Minutes(t *testing.T) {
+
+	// given
+	db := setUp(t)
+
+	departmentID := "abc"
+	var now int64
+	now = 1000
+
+	arduinoStatus := ArduinoStatus{
+		DepartmentID: departmentID,
+		StatusAt:     now - 300,
+	}
+
+	// when
+	{
+		errInsert := ArduinoStatusInsert(db, arduinoStatus)
+		if errInsert != nil {
+			t.Fatalf("%+v", errors.WithStack(errInsert))
+		}
+	}
+
+	// then
+	result, errQuery := ArduinoStatusQueryWithin5MinutesFromNow(db, departmentID, now)
+
+	if errQuery != nil {
+		t.Fatalf("%+v", errors.WithStack(errQuery))
+	}
+
+	if result != nil {
+		t.Fail()
+	}
 }
