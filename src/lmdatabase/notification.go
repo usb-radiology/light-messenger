@@ -13,7 +13,8 @@ type Notification struct {
 	Priority       int
 	Modality       string
 	CreatedAt      int64
-	ConfirmedAt    int64
+	ConfirmedAt    int64 // default 0, i.e. NULL
+	CancelledAt    int64 // default 0, i.e. NULL
 }
 
 // NotificationInsert ..
