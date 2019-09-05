@@ -12,9 +12,45 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
+
+var templates = make(map[string]*template.Template)
+var templateIndexID = "index"
+var templateCardID = "card"
+var templateRadiologieID = "radiologie"
+var templateVisierungID = "visierung"
+
+func compileTemplates() {
+	{
+		indexTpl := template.Must(template.ParseFiles("templates/index.html"))
+		templates[templateIndexID] = indexTpl
+	}
+
+	{
+		cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
+		cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
+		templates[templateCardID] = cardTpl
+	}
+
+	{
+		radiologieTpl, _ := template.New("radiologie.html").ParseFiles("templates/radiologie.html")
+		templates[templateRadiologieID] = radiologieTpl
+	}
+
+	{
+		visierungTpl := template.Must(template.ParseFiles("templates/visierung.html"))
+		templates[templateVisierungID] = visierungTpl
+	}
+}
+
+var priorityMap = map[int]string{
+	1: "is-danger",
+	2: "is-warning",
+	3: "is-info",
+}
 
 // InitServer ...
 func InitServer(initConfig *configuration.Configuration) *http.Server {
@@ -27,7 +63,6 @@ func InitServer(initConfig *configuration.Configuration) *http.Server {
 func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 	vars := mux.Vars(r)
 	department := vars["department"]
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	status := lmdatabase.ArduinoStatus{
 		DepartmentID: department,
@@ -35,53 +70,49 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 	}
 
 	errInsert := lmdatabase.ArduinoStatusInsert(db, status)
-	if errInsert != nil {
-		log.Fatal(errInsert)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Something bad happened!"))
+	if writeInternalServerError(errInsert, w) != nil {
 		return errInsert
 	}
+
 	w.Write([]byte(fmt.Sprintf("%+v", status)))
 	return nil
 }
 
 func mainHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
-	indexTpl := template.Must(template.ParseFiles("templates/index.html"))
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 	data := map[string]interface{}{}
-	err := indexTpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	err := renderTemplate(w, r, templates[templateIndexID], data)
+	if writeInternalServerError(err, w) != nil {
+		return err
 	}
+
 	return nil
 }
 
 func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
-	indexTpl := template.Must(template.ParseFiles("templates/visierung.html"))
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	vars := mux.Vars(r)
 	modality := vars["modality"]
 
 	data := map[string]interface{}{
 		"Modality": modality,
-		"AOD":      create(db, modality, "aod"),
-		"CTD":      create(db, modality, "ctd"),
-		"MSK":      create(db, modality, "msk"),
-		"NR":       create(db, modality, "nr"),
-		"NUK_NUK":  create(db, "nuk", "NUK"),
+		"AOD":      getCardHTML(db, modality, "aod"),
+		"CTD":      getCardHTML(db, modality, "ctd"),
+		"MSK":      getCardHTML(db, modality, "msk"),
+		"NR":       getCardHTML(db, modality, "nr"),
+		"NUK_NUK":  getCardHTML(db, "nuk", "NUK"),
 	}
-	err := indexTpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	err := renderTemplate(w, r, templates[templateVisierungID], data)
+	if writeInternalServerError(err, w) != nil {
+		return err
 	}
+
 	return nil
 }
 
 func confirmHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("X-IC-Remove", "true")
 	vars := mux.Vars(r)
 	department := vars["department"]
@@ -93,9 +124,6 @@ func confirmHandler(config *configuration.Configuration, db *sql.DB, w http.Resp
 
 func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
-	indexTpl, _ := template.New("radiologie.html").ParseFiles("templates/radiologie.html")
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 	vars := mux.Vars(r)
 	department := vars["department"]
 
@@ -105,73 +133,63 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 		"Department":    department,
 		"Notifications": createNotificationTmpl(db, department),
 	}
-	err := indexTpl.Execute(w, data)
-	if err != nil {
-		log.Fatal(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	err := renderTemplate(w, r, templates[templateRadiologieID], data)
+	if writeInternalServerError(err, w) != nil {
+		return err
 	}
+
 	return nil
 }
 
 func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
-	cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
-	cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	vars := mux.Vars(r)
 	modality := vars["modality"]
 	department := vars["department"]
 	priority := vars["priority"]
 	log.Print("priorityHandler ", modality, ", ", department, ", ", priority)
-	priorityMap := map[string]string{
-		"1": "is-danger",
-		"2": "is-warning",
-		"3": "is-info",
+
+	priorityNumber, errPriorityType := strconv.Atoi(priority)
+	if writeInternalServerError(errPriorityType, w) != nil {
+		return errPriorityType
 	}
-	priorityNumber, _ := strconv.Atoi(priority)
 
 	notification, _ := lmdatabase.NotificationGetByDepartmentAndModality(db, department, modality)
 	now := time.Now().Unix()
 	if notification.NotificationID == "" {
 		errInsertNotification := lmdatabase.NotificationInsert(db, department, priorityNumber, modality, now)
-		if errInsertNotification != nil {
-			log.Fatal(errInsertNotification)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Something bad happened!"))
-			return errInsertNotification
+		if writeInternalServerError(errInsertNotification, w) != nil {
+			return errPriorityType
 		}
 	} else {
 		lmdatabase.NotificationUpdatePriority(db, notification.NotificationID, priorityNumber)
 	}
 
 	arduinoStatus, errInsert := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, now)
-	if errInsert != nil {
-		log.Fatal(errInsert)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Something bad happened!"))
-		return errInsert
+	if writeInternalServerError(errInsert, w) != nil {
+		return errPriorityType
 	}
 
 	data := map[string]interface{}{
 		"Modality":       modality,
 		"Department":     department,
 		"Priority":       priority,
-		"PriorityName":   priorityMap[priority],
+		"PriorityName":   priorityMap[priorityNumber],
 		"PriorityNumber": priorityNumber,
 		"ArduinoStatus":  arduinoStatus,
 		"CreatedAt":      time.Unix(now, 0).Format("15:04:05"),
 	}
 
-	if err := cardTpl.ExecuteTemplate(w, "card_view", data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	err := renderTemplateName(w, r, templates[templateCardID], "card_view", data)
+	if writeInternalServerError(err, w) != nil {
+		return err
 	}
+
 	return nil
 }
 
 func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
-	cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
-	cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	vars := mux.Vars(r)
 	modality := vars["modality"]
@@ -185,9 +203,11 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 
 	lmdatabase.NotificationCancel(db, modality, department, time.Now().Unix())
 
-	if err := cardTpl.ExecuteTemplate(w, "card_view", data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	err := renderTemplateName(w, r, templates[templateCardID], "card_view", data)
+	if writeInternalServerError(err, w) != nil {
+		return err
 	}
+
 	return nil
 }
 
@@ -204,21 +224,43 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	return r
 }
 
-func render(w http.ResponseWriter, r *http.Request, tpl *template.Template, name string, data interface{}) {
-	buf := new(bytes.Buffer)
-	if err := tpl.ExecuteTemplate(buf, name, data); err != nil {
-		log.Fatalf("\nRender Error: %v\n", err)
-		return
-	}
-	w.Write(buf.Bytes())
-}
-
 // Start ...
 func Start(server *http.Server, port int) {
+	compileTemplates()
+
 	log.Println("Server listening on " + strconv.Itoa(port))
 
 	// returns ErrServerClosed on graceful close
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatalf("ListenAndServe(): %s", err)
 	}
+}
+
+func renderTemplateName(w http.ResponseWriter, r *http.Request, tpl *template.Template, name string, data interface{}) error {
+	buf := new(bytes.Buffer)
+	err := tpl.ExecuteTemplate(buf, name, data)
+	if writeInternalServerError(err, w) != nil {
+		return err
+	}
+	w.Write(buf.Bytes())
+	return nil
+}
+
+func renderTemplate(w http.ResponseWriter, r *http.Request, tpl *template.Template, data interface{}) error {
+	err := tpl.Execute(w, data)
+	if writeInternalServerError(err, w) != nil {
+		return err
+	}
+	return nil
+}
+
+func writeInternalServerError(err error, w http.ResponseWriter) error {
+	if err != nil {
+		log.Fatalf("%+v", errors.WithStack(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		return err
+	}
+
+	return nil
 }

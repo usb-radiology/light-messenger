@@ -7,6 +7,8 @@ import (
 	"github.com/usb-radiology/light-messenger/src/server"
 )
 
+// TODO: add command parameters to enable script-like workflow
+
 func main() {
 
 	initConfig, err := configuration.LoadAndSetConfiguration("./config.json")
