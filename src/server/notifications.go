@@ -10,7 +10,7 @@ import (
 )
 
 func createNotificationTmpl(db *sql.DB, department string) string {
-	notifications, _ := lmdatabase.QueryNotifications(db, department)
+	notifications, _ := lmdatabase.NotificationGetByDepartment(db, department)
 	funcMap := template.FuncMap{
 		"priorityMap": func(prio int) string {
 			priorityMap := map[int]string{

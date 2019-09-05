@@ -34,7 +34,7 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 		StatusAt:     time.Now().Unix(),
 	}
 
-	errInsert := lmdatabase.InsertStatus(db, status)
+	errInsert := lmdatabase.ArduinoStatusInsert(db, status)
 	if errInsert != nil {
 		log.Fatal(errInsert)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -87,7 +87,7 @@ func confirmHandler(config *configuration.Configuration, db *sql.DB, w http.Resp
 	department := vars["department"]
 	notificationID := vars["id"]
 	log.Print("confirmHandler ", department, ", ", notificationID)
-	lmdatabase.ConfirmNotification(db, notificationID, time.Now().Unix())
+	lmdatabase.NotificationConfirm(db, notificationID, time.Now().Unix())
 	return nil
 }
 
@@ -130,10 +130,10 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 	}
 	priorityNumber, _ := strconv.Atoi(priority)
 
-	notification, _ := lmdatabase.QueryNotification(db, modality, department)
+	notification, _ := lmdatabase.NotificationGetByDepartmentAndModality(db, department, modality)
 	now := time.Now().Unix()
 	if notification.NotificationID == "" {
-		errInsertNotification := lmdatabase.InsertNotification(db, department, priorityNumber, modality, now)
+		errInsertNotification := lmdatabase.NotificationInsert(db, department, priorityNumber, modality, now)
 		if errInsertNotification != nil {
 			log.Fatal(errInsertNotification)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -141,10 +141,10 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 			return errInsertNotification
 		}
 	} else {
-		lmdatabase.UpdateNotification(db, notification.NotificationID, priorityNumber)
+		lmdatabase.NotificationUpdatePriority(db, notification.NotificationID, priorityNumber)
 	}
 
-	arduinoStatus, errInsert := lmdatabase.IsAlive(db, department, now)
+	arduinoStatus, errInsert := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, now)
 	if errInsert != nil {
 		log.Fatal(errInsert)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -183,7 +183,7 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 		"PriorityNumber": 99, // needed because of le comparison in template
 	}
 
-	lmdatabase.CancelNotification(db, modality, department, time.Now().Unix())
+	lmdatabase.NotificationCancel(db, modality, department, time.Now().Unix())
 
 	if err := cardTpl.ExecuteTemplate(w, "card_view", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

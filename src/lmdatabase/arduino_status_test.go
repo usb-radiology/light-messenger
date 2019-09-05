@@ -2,12 +2,12 @@ package lmdatabase
 
 import (
 	"database/sql"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 )
@@ -37,7 +37,7 @@ func setUp(t *testing.T) *sql.DB {
 	return db
 }
 
-func TestIntegrationShouldUpdateTheArduinoStatus(t *testing.T) {
+func TestIntegrationShouldUpdateArduinoStatus(t *testing.T) {
 
 	// given
 	db := setUp(t)
@@ -52,13 +52,13 @@ func TestIntegrationShouldUpdateTheArduinoStatus(t *testing.T) {
 	}
 
 	// when
-	errInsert := InsertStatus(db, arduinoStatus)
+	errInsert := ArduinoStatusInsert(db, arduinoStatus)
 	if errInsert != nil {
-		t.Fatal(errInsert)
+		t.Fatalf("%+v", errors.WithStack(errInsert))
 	}
 
 	// then
-	result, errQuery := IsAlive(db, departmentID, now)
+	result, errQuery := ArduinoStatusQueryWithin5MinutesFromNow(db, departmentID, now)
 
 	if errQuery != nil {
 		t.Fatal(errQuery)
@@ -68,8 +68,7 @@ func TestIntegrationShouldUpdateTheArduinoStatus(t *testing.T) {
 		t.Errorf("Did not retrieve any rows")
 	}
 
-	fmt.Printf("%+v\n", result)
-
+	// fmt.Printf("%+v\n", result)
 	assert.Equal(t, result.DepartmentID, arduinoStatus.DepartmentID)
 	assert.Equal(t, result.StatusAt, arduinoStatus.StatusAt)
 

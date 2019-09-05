@@ -11,7 +11,7 @@ import (
 
 func create(db *sql.DB, modality string, department string) string {
 
-	notification, _ := lmdatabase.QueryNotification(db, modality, department)
+	notification, _ := lmdatabase.NotificationGetByDepartmentAndModality(db, department, modality)
 
 	// AOD Card Template
 	data := map[string]interface{}{
