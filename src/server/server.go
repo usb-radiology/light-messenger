@@ -15,6 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
+	"github.com/usb-radiology/light-messenger/src/version"
 )
 
 var templates = make(map[string]*template.Template)
@@ -80,7 +81,10 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 
 func mainHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
-	data := map[string]interface{}{}
+	data := map[string]interface{}{
+		"Version":   version.Version,
+		"BuildTime": version.BuildTime,
+	}
 
 	err := renderTemplate(w, r, templates[templateIndexID], data)
 	if writeInternalServerError(err, w) != nil {
@@ -96,12 +100,14 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 	modality := vars["modality"]
 
 	data := map[string]interface{}{
-		"Modality": modality,
-		"AOD":      getCardHTML(db, modality, "aod"),
-		"CTD":      getCardHTML(db, modality, "ctd"),
-		"MSK":      getCardHTML(db, modality, "msk"),
-		"NR":       getCardHTML(db, modality, "nr"),
-		"NUK_NUK":  getCardHTML(db, "nuk", "NUK"),
+		"Modality":  modality,
+		"AOD":       getCardHTML(db, modality, "aod"),
+		"CTD":       getCardHTML(db, modality, "ctd"),
+		"MSK":       getCardHTML(db, modality, "msk"),
+		"NR":        getCardHTML(db, modality, "nr"),
+		"NUK_NUK":   getCardHTML(db, "nuk", "NUK"),
+		"Version":   version.Version,
+		"BuildTime": version.BuildTime,
 	}
 
 	err := renderTemplate(w, r, templates[templateVisierungID], data)
@@ -132,6 +138,8 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 	data := map[string]interface{}{
 		"Department":    department,
 		"Notifications": createNotificationTmpl(db, department),
+		"Version":       version.Version,
+		"BuildTime":     version.BuildTime,
 	}
 
 	err := renderTemplate(w, r, templates[templateRadiologieID], data)

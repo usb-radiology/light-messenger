@@ -9,9 +9,14 @@ BINARY_NAME_PREFIX=light-messenger
 BINARY_NAME=$(BINARY_NAME_PREFIX).exec
 BINARY_UNIX=$(BINARY_NAME_PREFIX)-unix.exec
 
+VERSION=$(shell git describe --tags --dirty --always)
+BUILD_TIME=$(shell date +%FT%T%z)
+
+LDFLAGS=-ldflags "-X github.com/usb-radiology/light-messenger/src/version.Version=$(VERSION) -X github.com/usb-radiology/light-messenger/src/version.BuildTime=$(BUILD_TIME)"
+
 all: test build
 build: 
-	$(GOBUILD) -o $(BINARY_NAME) -v
+	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
 test: 
 	$(GOTEST) -v ./...
 test-unit: 
@@ -22,8 +27,7 @@ clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 	rm -f $(BINARY_UNIX)
-run:
-	$(GOBUILD) -o $(BINARY_NAME) -v
+run: build
 	./$(BINARY_NAME)
 deps:
 	$(GOMOD) tidy
