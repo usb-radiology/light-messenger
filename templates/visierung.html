@@ -15,36 +15,42 @@
 </head>
 
 <body>
-  <div class="container">
-    <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
-      <div class="navbar-brand"><a class="navbar-item" href="/">
-          <figure class="image is-24x24"><img src="/static/images/usb-logo.png" alt="logo"></figure>&nbsp;
-          Light
-          Messenger
-        </a><a role="button" class="navbar-burger burger" aria-label="menu" data-target="navbarBasicExample"
-          href="#"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></a>
-      </div>
-      <div id="navbarBasicExample" class="navbar-menu">
-        <div class="navbar-end">
-          <div class="navbar-item">
-            <div class="tooltip is-tooltip-bottom" data-tooltip="{{ .BuildTime }}"><span
-                class="tag is-dark">{{ .Version }}</span></div>
+  <section class="section-navbar">
+    <div class="container">
+      <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand"><a class="navbar-item" href="/">
+            <figure class="image is-24x24"><img src="/static/images/usb-logo.png" alt="logo"></figure>&nbsp;
+            Light
+            Messenger
+          </a><a role="button" class="navbar-burger burger" aria-label="menu" data-target="navbarBasicExample"
+            href="#"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></a>
+        </div>
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="tooltip is-tooltip-bottom" data-tooltip="{{ .BuildTime }}"><span
+                  class="tag is-dark">{{ .Version }}</span></div>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
-  </div>
-  <div class="container">
-    <section class="section">
-
+      </nav>
+    </div>
+  </section>
+  
+  <section class="section">
+    <div class="container">
       <h1 class="title">Visierung <span class="is-uppercase">{{ .Modality}}</span></h1>
-      <div class="container">
-        {{ if ne .Modality "nuk"}}
-          {{ if eq .Modality "ct"}}
-            <div class="columns" style="background-color: #6D9274">
-          {{else}}
-            <div class="columns" style="background-color: #6D7892">
-          {{end}}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      {{ if ne .Modality "nuk"}}
+        {{ if eq .Modality "ct"}}
+          <div class="columns" style="background-color: #6D9274">
+        {{else}}
+          <div class="columns" style="background-color: #6D7892">
+        {{end}}
             <div class="column is-3">
               {{ .AOD }}
             </div>
@@ -58,16 +64,15 @@
               {{ .NR}}
             </div>
           </div>
-          {{else}}
-          <div class="columns">
-            <div class="column is-3" style="background-color: #926D8B">
-              {{.NUK_NUK}}
-            </div>
+      {{else}}
+        <div class="columns">
+          <div class="column is-3" style="background-color: #926D8B">
+            {{.NUK_NUK}}
           </div>
-          {{end}}
         </div>
-    </section>
-  </div>
+      {{end}}
+    </div>
+  </section>
 
 </body>
 
