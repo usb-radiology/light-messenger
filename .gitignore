@@ -14,5 +14,8 @@
 # configuration
 config.json
 
+# binary data
+src/server/rice-box.go
+
 # binaries
 *.exec
