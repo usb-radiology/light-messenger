@@ -15,7 +15,9 @@ BUILD_TIME=$(shell date +%FT%T%z)
 LDFLAGS=-ldflags "-X github.com/usb-radiology/light-messenger/src/version.Version=$(VERSION) -X github.com/usb-radiology/light-messenger/src/version.BuildTime=$(BUILD_TIME)"
 
 all: test build
-build: 
+embed: 
+	rice embed-go -v -i github.com/usb-radiology/light-messenger/src/server
+build: embed
 	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
 test: 
 	$(GOTEST) -v ./...

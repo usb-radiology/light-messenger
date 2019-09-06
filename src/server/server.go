@@ -11,6 +11,7 @@ import (
 	"text/template"
 	"time"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
@@ -250,7 +251,8 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r.Handle("/notification/{department}/{id}", handler{initConfig, confirmHandler})
 	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
 	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(rice.MustFindBox("../../static").HTTPBox())))
 	return r
 }
 
