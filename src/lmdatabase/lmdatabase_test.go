@@ -2,9 +2,7 @@ package lmdatabase
 
 import (
 	"database/sql"
-	"io/ioutil"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -26,18 +24,16 @@ func setUp(t *testing.T) *sql.DB {
 
 	// only initialize statements once since reading from disk is a relatively slow operation
 	if len(statements) == 0 {
-		sqlFilePath := filepath.Join("..", "..", "res", "integration_test_setup.sql")
-
-		fileContents, errFileRead := ioutil.ReadFile(sqlFilePath)
-		if err != nil {
-			t.Fatalf("%+v", errors.WithStack(errFileRead))
+		strStatements, errReadStatements := ReadStatementsFromSQL(filepath.Join("..", "..", "res", "integration_test_setup.sql"))
+		if errReadStatements != nil {
+			t.Fatalf("%+v", errors.WithStack(errReadStatements))
 		}
 
-		statements = strings.Split(string(fileContents), ";\n")
+		statements = *strStatements
 		// log.Printf("%+v", statements)
 	}
 
-	_, errExecStatements := execStatements(db, statements)
+	_, errExecStatements := ExecStatements(db, statements)
 
 	if errExecStatements != nil {
 		t.Fatalf("%+v", errors.WithStack(errExecStatements))

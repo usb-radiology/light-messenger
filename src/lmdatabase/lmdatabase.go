@@ -2,6 +2,7 @@ package lmdatabase
 
 import (
 	"database/sql"
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -15,7 +16,21 @@ func GetDB(initConfig *configuration.Configuration) (*sql.DB, error) {
 	return sql.Open("mysql", conn)
 }
 
-func execStatements(db *sql.DB, sqlStatements []string) (*[]sql.Result, error) {
+// ReadStatementsFromSQL ..
+func ReadStatementsFromSQL(sqlFilePath string) (*[]string, error) {
+	// sqlFilePath :=
+
+	fileContents, errFileRead := ioutil.ReadFile(sqlFilePath)
+	if errFileRead != nil {
+		return nil, errFileRead
+	}
+
+	strStatements := strings.Split(string(fileContents), ";\n")
+	return &strStatements, nil
+}
+
+// ExecStatements ..
+func ExecStatements(db *sql.DB, sqlStatements []string) (*[]sql.Result, error) {
 
 	results := make([]sql.Result, 0)
 
@@ -25,7 +40,7 @@ func execStatements(db *sql.DB, sqlStatements []string) (*[]sql.Result, error) {
 
 		// skip empty statements
 		if len(trimedStatement) > 0 {
-			execResult, err := db.Exec(statement)
+			execResult, err := db.Exec(trimedStatement)
 			if err != nil {
 				// if err.Error() != "Error 1065: Query was empty" { // skip empty line errors (or alternatively skip empty line statements)
 				return nil, err
@@ -37,4 +52,23 @@ func execStatements(db *sql.DB, sqlStatements []string) (*[]sql.Result, error) {
 	}
 
 	return &results, nil
+}
+
+// ExecStatement ..
+func ExecStatement(db *sql.DB, statement string) (sql.Result, error) {
+
+	trimedStatement := strings.Trim(statement, " \n")
+
+	// skip empty statements
+	if len(trimedStatement) > 0 {
+		execResult, err := db.Exec(trimedStatement)
+		if err != nil {
+			// if err.Error() != "Error 1065: Query was empty" { // skip empty line errors (or alternatively skip empty line statements)
+			return nil, err
+			// }
+		}
+		return execResult, nil
+	}
+
+	return nil, nil
 }
