@@ -19,3 +19,7 @@ src/server/rice-box.go
 
 # binaries
 *.exec
+
+# IDE
+.vscode/
+
