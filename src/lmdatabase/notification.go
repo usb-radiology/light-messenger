@@ -19,7 +19,7 @@ type Notification struct {
 
 // NotificationInsert ..
 func NotificationInsert(db *sql.DB, department string, priority int, modality string, createdAt int64) error {
-	stmtIns, err := db.Prepare(`
+	insertStmt, err := db.Prepare(`
 	INSERT INTO
 		Notification (notificationId, departmentId, priority, modality, createdAt)
 	VALUES( ?, ? , ?, ?, ?) `)
@@ -28,9 +28,9 @@ func NotificationInsert(db *sql.DB, department string, priority int, modality st
 		return err
 	}
 
-	defer stmtIns.Close()
+	defer insertStmt.Close()
 
-	_, errExec := stmtIns.Exec(uuid.New().String(), department, priority, modality, createdAt)
+	_, errExec := insertStmt.Exec(uuid.New().String(), department, priority, modality, createdAt)
 	if errExec != nil {
 		return errExec
 	}
@@ -39,7 +39,7 @@ func NotificationInsert(db *sql.DB, department string, priority int, modality st
 
 // NotificationGetByDepartmentAndModality ..
 func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modality string) (*Notification, error) {
-	queryStr :=
+	queryStmt :=
 		`SELECT
 			notificationId, departmentId, modality, priority, createdAt
 		FROM
@@ -53,7 +53,7 @@ func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modal
 		AND
 			confirmedAt IS NULL`
 
-	row := db.QueryRow(queryStr, department, modality)
+	row := db.QueryRow(queryStmt, department, modality)
 
 	var result Notification
 	errRowScan := row.Scan(&result.NotificationID, &result.DepartmentID, &result.Modality, &result.Priority, &result.CreatedAt)
@@ -74,7 +74,7 @@ func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modal
 
 // NotificationGetByDepartment ..
 func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification, error) {
-	queryStr :=
+	queryStmt :=
 		`SELECT
 			notificationId, modality, departmentId, priority, createdAt
 		FROM
@@ -84,9 +84,12 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 		AND
 			cancelledAt IS NULL
 		AND
-			confirmedAt IS NULL`
+			confirmedAt IS NULL
+		ORDER BY 
+			priority 
+		ASC`
 
-	rows, errQuery := db.Query(queryStr, department)
+	rows, errQuery := db.Query(queryStmt, department)
 	if errQuery != nil {
 		return nil, errQuery
 	}
@@ -106,7 +109,7 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 
 // NotificationCancel ..
 func NotificationCancel(db *sql.DB, modality string, department string, cancelledAt int64) error {
-	stmtIns, err := db.Prepare(`
+	updateStmt, err := db.Prepare(`
 	UPDATE
 		Notification
 	SET
@@ -124,9 +127,9 @@ func NotificationCancel(db *sql.DB, modality string, department string, cancelle
 		return err
 	}
 
-	defer stmtIns.Close()
+	defer updateStmt.Close()
 
-	_, errExec := stmtIns.Exec(cancelledAt, modality, department)
+	_, errExec := updateStmt.Exec(cancelledAt, modality, department)
 	if errExec != nil {
 		return errExec
 	}
@@ -136,7 +139,7 @@ func NotificationCancel(db *sql.DB, modality string, department string, cancelle
 
 // NotificationUpdatePriority ..
 func NotificationUpdatePriority(db *sql.DB, notificationID string, priority int) error {
-	stmtIns, err := db.Prepare(`
+	updateStmt, err := db.Prepare(`
 	UPDATE
 		Notification
 	SET
@@ -147,9 +150,9 @@ func NotificationUpdatePriority(db *sql.DB, notificationID string, priority int)
 	if err != nil {
 		return err
 	}
-	defer stmtIns.Close()
+	defer updateStmt.Close()
 
-	_, errExec := stmtIns.Exec(priority, notificationID)
+	_, errExec := updateStmt.Exec(priority, notificationID)
 	if errExec != nil {
 		return errExec
 	}
@@ -159,7 +162,7 @@ func NotificationUpdatePriority(db *sql.DB, notificationID string, priority int)
 
 // NotificationConfirm ..
 func NotificationConfirm(db *sql.DB, notificationID string, now int64) error {
-	stmtIns, err := db.Prepare(`
+	updateStmt, err := db.Prepare(`
 	UPDATE
 		Notification
 	SET
@@ -171,9 +174,9 @@ func NotificationConfirm(db *sql.DB, notificationID string, now int64) error {
 		return err
 	}
 
-	defer stmtIns.Close()
+	defer updateStmt.Close()
 
-	_, errExec := stmtIns.Exec(now, notificationID)
+	_, errExec := updateStmt.Exec(now, notificationID)
 	if errExec != nil {
 		return errExec
 	}

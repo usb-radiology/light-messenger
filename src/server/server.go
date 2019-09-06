@@ -79,6 +79,27 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 	return nil
 }
 
+func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+	vars := mux.Vars(r)
+	department := vars["department"]
+
+	notifications, _ := lmdatabase.NotificationGetByDepartment(db, department)
+
+	if len(*notifications) > 0 {
+		arduinoPrioMap := map[int]string{
+			1: "HIGH",
+			2: "MEDIUM",
+			3: "LOW",
+		}
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		w.Write([]byte(fmt.Sprintf(";1;%v;", arduinoPrioMap[(*notifications)[0].Priority])))
+	}
+	return nil
+
+}
+
 func mainHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
 	data := map[string]interface{}{
@@ -225,6 +246,7 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r.Handle("/mta/{modality}", handler{initConfig, visierungHandler})
 	r.Handle("/radiologie/{department}", handler{initConfig, radiologieHandler})
 	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
+	r.Handle("/nce-rest/arduino-status/{department}-open-notifications", handler{initConfig, openStatusHandler})
 	r.Handle("/notification/{department}/{id}", handler{initConfig, confirmHandler})
 	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
 	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})
