@@ -84,7 +84,10 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 		AND
 			cancelledAt IS NULL
 		AND
-			confirmedAt IS NULL`
+			confirmedAt IS NULL
+		ORDER BY 
+			priority 
+		ASC`
 
 	rows, errQuery := db.Query(queryStmt, department)
 	if errQuery != nil {
