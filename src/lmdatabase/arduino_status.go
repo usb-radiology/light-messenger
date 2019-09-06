@@ -11,7 +11,7 @@ type ArduinoStatus struct {
 // ArduinoStatusInsert ..
 func ArduinoStatusInsert(db *sql.DB, status ArduinoStatus) error {
 
-	stmtIns, err := db.Prepare(`
+	insertStmt, err := db.Prepare(`
 	INSERT INTO
 		ArduinoStatus
 	VALUES( ?, ? )
@@ -22,9 +22,9 @@ func ArduinoStatusInsert(db *sql.DB, status ArduinoStatus) error {
 		return err
 	}
 
-	defer stmtIns.Close()
+	defer insertStmt.Close()
 
-	_, errExec := stmtIns.Exec(status.DepartmentID, status.StatusAt, status.StatusAt)
+	_, errExec := insertStmt.Exec(status.DepartmentID, status.StatusAt, status.StatusAt)
 	if errExec != nil {
 		return errExec
 	}
@@ -35,7 +35,7 @@ func ArduinoStatusInsert(db *sql.DB, status ArduinoStatus) error {
 // ArduinoStatusQueryWithin5MinutesFromNow ..
 func ArduinoStatusQueryWithin5MinutesFromNow(db *sql.DB, department string, now int64) (*ArduinoStatus, error) {
 
-	queryStr := `
+	queryStmt := `
 	SELECT departmentId, statusAt FROM
 		ArduinoStatus
 	WHERE
@@ -43,7 +43,7 @@ func ArduinoStatusQueryWithin5MinutesFromNow(db *sql.DB, department string, now 
 	AND
 		statusAt > ?`
 
-	row := db.QueryRow(queryStr, department, now-300)
+	row := db.QueryRow(queryStmt, department, now-300)
 
 	var result ArduinoStatus
 
