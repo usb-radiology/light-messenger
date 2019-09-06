@@ -16,7 +16,7 @@ CREATE TABLE `Notification` (
   `departmentId` varchar(255) NOT NULL,
   `priority` int(11) NOT NULL,
   `createdAt` bigint NOT NULL,
-  `confirmedAt` bigint DEFAULT NULL,
-  `cancelledAt` bigint DEFAULT NULL,
+  `confirmedAt` bigint NOT NULL DEFAULT -1,
+  `cancelledAt` bigint NOT NULL DEFAULT -1,
   PRIMARY KEY (`notificationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

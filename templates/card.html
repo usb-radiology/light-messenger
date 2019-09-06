@@ -1,6 +1,6 @@
 <div class="card" id="{{ .Modality }}-{{ .Department }}">
   <header class="card-header">
-    <p class="card-header-title is-uppercase">
+    <p class="card-header-title is-uppercase is-size-4">
       {{ .Department}}
     </p>
     <div class="tags has-addons card-header-icon">
@@ -13,16 +13,16 @@
     </div>
   </header>
   <div class="card-content">
-    <div class="content">
-      <a href="#" class="button is-rounded is-info is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
+    <div style="display:flex;justify-content: space-between">
+      <a href="#" class="button is-rounded is-info is-medium" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  3}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/3" {{end}} title="Visierung mit tiefer Priorität erstellen">Tiefe Prio</a>
-      <a href="#" class="button is-rounded is-warning is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/3" {{end}} title="Visierung mit tiefer Priorität erstellen">Tief</a>
+      <a href="#" class="button is-rounded is-warning is-medium" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  2}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/2" {{end}} title="Visierung mit mittlerer Priorität erstellen">Mittlere Prio</a>
-      <a href="#" class="button is-rounded is-danger is-small" ic-target="#{{ .Modality }}-{{ .Department }}"
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/2" {{end}} title="Visierung mit mittlerer Priorität erstellen">Mittel</a>
+      <a href="#" class="button is-rounded is-danger is-medium" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  1}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/1" {{end}} title="Visierung mit hoher Priorität erstellen">Hohe Prio</a>
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/1" {{end}} title="Visierung mit hoher Priorität erstellen">Hoch</a>
     </div>
   </div>
   <footer class="card-footer">

@@ -9,6 +9,8 @@ import (
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
 
+
+
 func createNotificationTmpl(db *sql.DB, department string) string {
 	notifications, _ := lmdatabase.NotificationGetByDepartment(db, department)
 	funcMap := template.FuncMap{
@@ -20,7 +22,7 @@ func createNotificationTmpl(db *sql.DB, department string) string {
 			}
 			return priorityMap[prio]
 		},
-		"now": func(now int64) string {
+		"toTime": func(now int64) string {
 			return time.Unix(now, 0).Format("15:04:05")
 		},
 	}

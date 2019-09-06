@@ -2,6 +2,7 @@ package lmdatabase
 
 import (
 	"database/sql"
+	"log"
 
 	"github.com/google/uuid"
 )
@@ -49,9 +50,9 @@ func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modal
 		AND
 			modality = ?	
 		AND
-			cancelledAt IS NULL
+			cancelledAt = -1
 		AND
-			confirmedAt IS NULL`
+			confirmedAt = -1`
 
 	row := db.QueryRow(queryStmt, department, modality)
 
@@ -82,9 +83,9 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 		WHERE
 			departmentId = ?
 		AND
-			cancelledAt IS NULL
+			cancelledAt = -1
 		AND
-			confirmedAt IS NULL
+			confirmedAt = -1
 		ORDER BY 
 			priority 
 		ASC`
@@ -107,6 +108,43 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 	return &openNotifications, nil
 }
 
+// NotificationGetByModality ..
+func NotificationGetByModality(db *sql.DB, modality string) (*[]Notification, error) {
+	queryStmt :=
+		`SELECT
+			notificationId, modality, departmentId, priority, createdAt, confirmedAt, cancelledAt
+		FROM
+			Notification
+		WHERE
+			modality = ?
+		AND
+			(confirmedAt <> -1 OR cancelledAt <> -1)
+		ORDER BY 
+			createdAt 
+		DESC`
+
+	rows, errQuery := db.Query(queryStmt, modality)
+	if errQuery != nil {
+		log.Fatal(errQuery)
+		return nil, errQuery
+	}
+
+	processedNotifications := make([]Notification, 0)
+
+	for rows.Next() {
+		var notification Notification
+		if errRowScan := rows.Scan(&notification.NotificationID, &notification.Modality,
+			&notification.DepartmentID, &notification.Priority, &notification.CreatedAt,
+			&notification.ConfirmedAt, &notification.CancelledAt); errRowScan != nil {
+				log.Printf("%+v, %+v", notification, processedNotifications)
+			return nil, errRowScan
+		}
+		processedNotifications = append(processedNotifications, notification)
+	}
+
+	return &processedNotifications, nil
+}
+
 // NotificationCancel ..
 func NotificationCancel(db *sql.DB, modality string, department string, cancelledAt int64) error {
 	updateStmt, err := db.Prepare(`
@@ -119,9 +157,9 @@ func NotificationCancel(db *sql.DB, modality string, department string, cancelle
 	AND
 		departmentId = ?
 	AND
-		confirmedAt IS NULL
+		confirmedAt = -1
 	AND
-		cancelledAt IS NULL`)
+		cancelledAt = -1`)
 
 	if err != nil {
 		return err

@@ -23,7 +23,8 @@
             Light
             Messenger
           </a><a role="button" class="navbar-burger burger" aria-label="menu" data-target="navbarBasicExample"
-            href="#"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></a>
+            href="#"><span aria-hidden="true"></span><span aria-hidden="true"></span><span
+              aria-hidden="true"></span></a>
         </div>
         <div id="navbarBasicExample" class="navbar-menu">
           <div class="navbar-end">
@@ -36,42 +37,66 @@
       </nav>
     </div>
   </section>
-  
-  <section class="section">
-    <div class="container">
-      <h1 class="title">Visierung <span class="is-uppercase">{{ .Modality}}</span></h1>
-    </div>
-  </section>
 
-  <section class="section">
+  <section class="section"> 
     <div class="container">
+        <h1 class="title" style="padding-bottom: 1rem">Visierung <span class="is-uppercase">{{ .Modality}}</span></h1>
       {{ if ne .Modality "nuk"}}
-        {{ if eq .Modality "ct"}}
-          <div class="columns" style="background-color: #6D9274">
+      {{ if eq .Modality "ct"}}
+      <div class="columns" style="background-color: #6D9274">
         {{else}}
-          <div class="columns" style="background-color: #6D7892">
-        {{end}}
-            <div class="column is-3">
-              {{ .AOD }}
-            </div>
-            <div class="column is-3">
-              {{ .CTD}}
-            </div>
-            <div class="column is-3">
-              {{ .MSK}}
-            </div>
-            <div class="column is-3">
-              {{ .NR}}
-            </div>
+        <div class="columns" style="background-color: #6D7892">
+          {{end}}
+          <div class="column is-3">
+            {{ .AOD }}
           </div>
-      {{else}}
+          <div class="column is-3">
+            {{ .CTD}}
+          </div>
+          <div class="column is-3">
+            {{ .MSK}}
+          </div>
+          <div class="column is-3">
+            {{ .NR}}
+          </div>
+        </div>
+        {{else}}
         <div class="columns">
           <div class="column is-3" style="background-color: #926D8B">
             {{.NUK_NUK}}
           </div>
         </div>
-      {{end}}
+        {{end}}
+      </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="title" style="padding-bottom: 1rem">Abgeschlossene Visierungen</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Abteilung</th>
+            <th>Priority</th>
+            <th>Erstellt am</abbr></th>
+            <th>Bestätigt am</abbr></th>
+            <th>Cancelled am</abbr></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ range $n := .ProcessedNotifications }}
+          <tr>
+            <th class="is-uppercase">{{.DepartmentID}}</th>
+            <td>{{.Priority}}</td>
+            <td>{{ toTime .CreatedAt}}</td>
+            <td>{{ toTime .ConfirmedAt}}</td>
+            <td>{{ toTime .CancelledAt}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
     </div>
+
   </section>
 
 </body>

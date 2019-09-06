@@ -24,6 +24,8 @@ var templateCardID = "card"
 var templateRadiologieID = "radiologie"
 var templateVisierungID = "visierung"
 
+
+
 func compileTemplates() {
 	{
 		indexTpl := template.Must(template.ParseFiles("templates/index.html"))
@@ -42,7 +44,24 @@ func compileTemplates() {
 	}
 
 	{
-		visierungTpl := template.Must(template.ParseFiles("templates/visierung.html"))
+		funcMap := template.FuncMap{
+			"priorityMap": func(prio int) string {
+				priorityMap := map[int]string{
+					1: "is-danger",
+					2: "is-warning",
+					3: "is-info",
+				}
+				return priorityMap[prio]
+			},
+			"toTime": func(now int64) string {
+				if now == -1 {
+					return ""
+				}
+				return time.Unix(now, 0).Format("2006-01-02 15:04:05")
+			},
+		}
+		
+		visierungTpl := template.Must(template.New("visierung.html").Funcs(funcMap).ParseFiles("templates/visierung.html"))
 		templates[templateVisierungID] = visierungTpl
 	}
 }
@@ -120,15 +139,21 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 	vars := mux.Vars(r)
 	modality := vars["modality"]
 
+	processedNotifications, errN := lmdatabase.NotificationGetByModality(db, modality)
+	if writeInternalServerError(errN, w) != nil {
+		return errN
+	}
+
 	data := map[string]interface{}{
-		"Modality":  modality,
-		"AOD":       getCardHTML(db, modality, "aod"),
-		"CTD":       getCardHTML(db, modality, "ctd"),
-		"MSK":       getCardHTML(db, modality, "msk"),
-		"NR":        getCardHTML(db, modality, "nr"),
-		"NUK_NUK":   getCardHTML(db, "nuk", "NUK"),
-		"Version":   version.Version,
-		"BuildTime": version.BuildTime,
+		"Modality":               modality,
+		"AOD":                    getCardHTML(db, modality, "aod"),
+		"CTD":                    getCardHTML(db, modality, "ctd"),
+		"MSK":                    getCardHTML(db, modality, "msk"),
+		"NR":                     getCardHTML(db, modality, "nr"),
+		"NUK_NUK":                getCardHTML(db, "nuk", "NUK"),
+		"Version":                version.Version,
+		"BuildTime":              version.BuildTime,
+		"ProcessedNotifications": processedNotifications,
 	}
 
 	err := renderTemplate(w, r, templates[templateVisierungID], data)
@@ -243,7 +268,7 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r := mux.NewRouter()
 	r.Handle("/", handler{initConfig, mainHandler})
-	r.Handle("/mta/{modality}", handler{initConfig, visierungHandler})
+	r.Handle("/mtra/{modality}", handler{initConfig, visierungHandler})
 	r.Handle("/radiologie/{department}", handler{initConfig, radiologieHandler})
 	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
 	r.Handle("/nce-rest/arduino-status/{department}-open-notifications", handler{initConfig, openStatusHandler})
