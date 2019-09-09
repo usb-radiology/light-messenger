@@ -44,24 +44,24 @@
     <div class="container">
       <h1 class="title" style="padding-bottom: 1rem">Visierung <span class="is-uppercase">{{ .Modality}}</span></h1>
       {{ if ne .Modality "nuk"}}
-      {{ if eq .Modality "ct"}}
-      <div class="columns" style="background-color: #6D9274">
-        {{else}}
-        <div class="columns" style="background-color: #6D7892">
-          {{end}}
-          <div class="column is-3">
-            {{ .AOD }}
+        {{ if eq .Modality "ct"}}
+        <div class="columns" style="background-color: #6D9274">
+          {{else}}
+          <div class="columns" style="background-color: #6D7892">
+            {{end}}
+            <div class="column is-3">
+              {{ .AOD }}
+            </div>
+            <div class="column is-3">
+              {{ .CTD}}
+            </div>
+            <div class="column is-3">
+              {{ .MSK}}
+            </div>
+            <div class="column is-3">
+              {{ .NR}}
+            </div>
           </div>
-          <div class="column is-3">
-            {{ .CTD}}
-          </div>
-          <div class="column is-3">
-            {{ .MSK}}
-          </div>
-          <div class="column is-3">
-            {{ .NR}}
-          </div>
-        </div>
         {{else}}
         <div class="columns">
           <div class="column is-3" style="background-color: #926D8B">

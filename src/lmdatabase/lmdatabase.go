@@ -3,6 +3,7 @@ package lmdatabase
 import (
 	"database/sql"
 	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
 
@@ -13,7 +14,12 @@ import (
 // GetDB ..
 func GetDB(initConfig *configuration.Configuration) (*sql.DB, error) {
 	conn := initConfig.Database.Username + ":" + initConfig.Database.Password + "@tcp(" + initConfig.Database.Host + ":" + strconv.Itoa(initConfig.Database.Port) + ")/" + initConfig.Database.DBName
-	return sql.Open("mysql", conn)
+	db, err := sql.Open("mysql", conn)
+	if err != nil {
+		log.Fatal("Error opening database connection", err)
+	}
+	log.Print("Open connections: ", db.Stats().OpenConnections)
+	return db, nil
 }
 
 // ReadStatementsFromSQL ..

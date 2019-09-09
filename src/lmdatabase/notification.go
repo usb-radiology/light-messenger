@@ -55,11 +55,10 @@ func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modal
 			confirmedAt = -1`
 
 	row := db.QueryRow(queryStmt, department, modality)
-
+	//defer db.Close()
 	var result Notification
 	errRowScan := row.Scan(&result.NotificationID, &result.DepartmentID, &result.Modality, &result.Priority, &result.CreatedAt)
 	if errRowScan != nil {
-
 		if errRowScan == sql.ErrNoRows {
 			result.Modality = modality
 			result.DepartmentID = department
@@ -69,7 +68,6 @@ func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modal
 
 		return &result, errRowScan
 	}
-
 	return &result, nil
 }
 
@@ -94,7 +92,7 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 	if errQuery != nil {
 		return nil, errQuery
 	}
-
+	defer rows.Close()
 	openNotifications := make([]Notification, 0)
 
 	for rows.Next() {
@@ -104,7 +102,7 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 		}
 		openNotifications = append(openNotifications, notification)
 	}
-
+	//defer rows.Close()
 	return &openNotifications, nil
 }
 
@@ -128,7 +126,7 @@ func NotificationGetByModality(db *sql.DB, modality string) (*[]Notification, er
 		log.Fatal(errQuery)
 		return nil, errQuery
 	}
-
+	defer rows.Close()
 	processedNotifications := make([]Notification, 0)
 
 	for rows.Next() {
@@ -136,12 +134,12 @@ func NotificationGetByModality(db *sql.DB, modality string) (*[]Notification, er
 		if errRowScan := rows.Scan(&notification.NotificationID, &notification.Modality,
 			&notification.DepartmentID, &notification.Priority, &notification.CreatedAt,
 			&notification.ConfirmedAt, &notification.CancelledAt); errRowScan != nil {
-				log.Printf("%+v, %+v", notification, processedNotifications)
+			log.Printf("%+v, %+v", notification, processedNotifications)
 			return nil, errRowScan
 		}
 		processedNotifications = append(processedNotifications, notification)
 	}
-
+	//defer rows.Close()
 	return &processedNotifications, nil
 }
 

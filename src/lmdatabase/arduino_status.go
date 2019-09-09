@@ -22,7 +22,7 @@ func ArduinoStatusInsert(db *sql.DB, status ArduinoStatus) error {
 		return err
 	}
 
-	defer insertStmt.Close()
+	//defer insertStmt.Close()
 
 	_, errExec := insertStmt.Exec(status.DepartmentID, status.StatusAt, status.StatusAt)
 	if errExec != nil {
@@ -36,7 +36,9 @@ func ArduinoStatusInsert(db *sql.DB, status ArduinoStatus) error {
 func ArduinoStatusQueryWithin5MinutesFromNow(db *sql.DB, department string, now int64) (*ArduinoStatus, error) {
 
 	queryStmt := `
-	SELECT departmentId, statusAt FROM
+	SELECT 
+		departmentId, statusAt 
+	FROM
 		ArduinoStatus
 	WHERE
 		departmentId = ?
@@ -54,6 +56,5 @@ func ArduinoStatusQueryWithin5MinutesFromNow(db *sql.DB, department string, now 
 		}
 		return nil, errRowScan
 	}
-
 	return &result, nil
 }

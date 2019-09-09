@@ -172,7 +172,7 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 		"CTD":                    getCardHTML(db, modality, "ctd"),
 		"MSK":                    getCardHTML(db, modality, "msk"),
 		"NR":                     getCardHTML(db, modality, "nr"),
-		"NUK_NUK":                getCardHTML(db, "nuk", "NUK"),
+		"NUK_NUK":                getCardHTML(db, modality, "nuk"),
 		"Version":                version.Version,
 		"BuildTime":              version.BuildTime,
 		"ProcessedNotifications": processedNotifications,

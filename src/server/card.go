@@ -11,7 +11,6 @@ import (
 func getCardHTML(db *sql.DB, modality string, department string) string {
 
 	notification, _ := lmdatabase.NotificationGetByDepartmentAndModality(db, department, modality)
-
 	// AOD Card Template
 	data := map[string]interface{}{
 		"Modality":       notification.Modality,
