@@ -295,14 +295,18 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 
 func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r := mux.NewRouter()
-	r.Handle("/", handler{initConfig, mainHandler})
-	r.Handle("/mtra/{modality}", handler{initConfig, visierungHandler})
-	r.Handle("/radiologie/{department}", handler{initConfig, radiologieHandler})
-	r.Handle("/nce-rest/arduino-status/{department}-status", handler{initConfig, arduinoStatusHandler})
-	r.Handle("/nce-rest/arduino-status/{department}-open-notifications", handler{initConfig, openStatusHandler})
-	r.Handle("/notification/{department}/{id}", handler{initConfig, confirmHandler})
-	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
-	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})
+	db, errDb := lmdatabase.GetDB(initConfig)
+	if errDb != nil {
+		log.Fatal("Error opening database")
+	}
+	r.Handle("/", handler{db, initConfig, mainHandler})
+	r.Handle("/mtra/{modality}", handler{db, initConfig, visierungHandler})
+	r.Handle("/radiologie/{department}", handler{db, initConfig, radiologieHandler})
+	r.Handle("/nce-rest/arduino-status/{department}-status", handler{db, initConfig, arduinoStatusHandler})
+	r.Handle("/nce-rest/arduino-status/{department}-open-notifications", handler{db, initConfig, openStatusHandler})
+	r.Handle("/notification/{department}/{id}", handler{db, initConfig, confirmHandler})
+	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{db, initConfig, priorityHandler})
+	r.Handle("/modality/{modality}/department/{department}/cancel", handler{db, initConfig, cancelHandler})
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
 	return r

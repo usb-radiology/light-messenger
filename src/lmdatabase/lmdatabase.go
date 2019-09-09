@@ -18,7 +18,6 @@ func GetDB(initConfig *configuration.Configuration) (*sql.DB, error) {
 	if err != nil {
 		log.Fatal("Error opening database connection", err)
 	}
-	log.Print("Open connections: ", db.Stats().OpenConnections)
 	return db, nil
 }
 
