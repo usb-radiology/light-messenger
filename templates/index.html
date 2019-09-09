@@ -1,81 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>USB KRN light-messenger</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="/static/css/bulma-0.7.5.css" />
-    <link rel="stylesheet" href="/static/css/bulma-tooltip.min.css" />
 
-    <script src="/static/js/jquery-3.4.1.min.js"></script>
-    <script src="/static/js/intercooler-1.2.2.js"></script>
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USB KRN light-messenger</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" sizes="any">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="/static/css/bulma-0.7.5.css" />
+  <link rel="stylesheet" href="/static/css/bulma-tooltip.min.css" />
 
-    <script type="text/javascript">
-      function openTab(evt, tabName) {
-        var i, x, tablinks;
-        x = document.getElementsByClassName("content-tab");
-        for (i = 0; i < x.length; i++) {
-          x[i].style.display = "none";
-        }
-        tablinks = document.getElementsByClassName("tab");
-        for (i = 0; i < x.length; i++) {
-          tablinks[i].className = tablinks[i].className.replace(" is-active", "");
-        }
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " is-active";
+  <script src="/static/js/jquery-3.4.1.min.js"></script>
+  <script src="/static/js/intercooler-1.2.2.js"></script>
+
+  <script type="text/javascript">
+    function openTab(evt, tabName) {
+      var i, x, tablinks;
+      x = document.getElementsByClassName("content-tab");
+      for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
       }
-    </script>
-  </head>
+      tablinks = document.getElementsByClassName("tab");
+      for (i = 0; i < x.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" is-active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " is-active";
+    }
+  </script>
+</head>
 
-  <body>
-    <section class="section-navbar">
-      <div class="container">
-        <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
-          <div class="navbar-brand">
-            <a class="navbar-item" href="/">
-              <figure class="image is-24x24"><img src="/static/images/usb-logo.png" alt="logo" /></figure>
-              &nbsp; Light Messenger </a
-            ><a role="button" class="navbar-burger burger" aria-label="menu" data-target="navbarBasicExample" href="#"
-              ><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span
-            ></a>
-          </div>
-          <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-end">
-              <div class="navbar-item">
-                <div class="tooltip is-tooltip-bottom" data-tooltip="{{ .BuildTime }}">
-                  <span class="tag is-dark">{{ .Version }}</span>
-                </div>
+<body>
+  <section class="section-navbar">
+    <div class="container">
+      <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            <figure class="image is-24x24"><img src="/static/images/usb-logo.png" alt="logo" /></figure>
+            &nbsp; Light Messenger
+          </a><a role="button" class="navbar-burger burger" aria-label="menu" data-target="navbarBasicExample"
+            href="#"><span aria-hidden="true"></span><span aria-hidden="true"></span><span
+              aria-hidden="true"></span></a>
+        </div>
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="tooltip is-tooltip-bottom" data-tooltip="{{ .BuildTime }}">
+                <span class="tag is-dark">{{ .Version }}</span>
               </div>
             </div>
           </div>
-        </nav>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="content">
-          <h1 class="title">Für MTRAs</h1>
-          <a class="button is-large is-link" href="/mtra/ct">Visierung CT</a>
-          <a class="button is-large is-link" href="/mtra/mr">Visierung MR</a>
-          <a class="button is-large is-link" href="/mtra/nuk">Visierung NUK</a>
         </div>
-      </div>
-    </section>
+      </nav>
+    </div>
+  </section>
 
-    <section class="section">
-      <div class="container">
-        <div class="content">
-          <h1 class="title">Für Radiologen</h1>
-          <a class="button is-large is-info" href="/radiologie/aod">AOD</a>
-          <a class="button is-large is-info" href="/radiologie/ctd">CTD</a>
-          <a class="button is-large is-info" href="/radiologie/msk">MSK</a>
-          <a class="button is-large is-info" href="/radiologie/nr">NR</a>
-          <a class="button is-large is-info" href="/radiologie/nuk">NUK</a>
-        </div>
+  <section class="section">
+    <div class="container">
+      <div class="content">
+        <h1 class="title">Für MTRAs</h1>
+        <a class="button is-large is-link" href="/mtra/ct">Visierung CT</a>
+        <a class="button is-large is-link" href="/mtra/mr">Visierung MR</a>
+        <a class="button is-large is-link" href="/mtra/nuk">Visierung NUK</a>
       </div>
-    </section>
-  </body>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="content">
+        <h1 class="title">Für Radiologen</h1>
+        <a class="button is-large is-info" href="/radiologie/aod">AOD</a>
+        <a class="button is-large is-info" href="/radiologie/ctd">CTD</a>
+        <a class="button is-large is-info" href="/radiologie/msk">MSK</a>
+        <a class="button is-large is-info" href="/radiologie/nr">NR</a>
+        <a class="button is-large is-info" href="/radiologie/nuk">NUK</a>
+      </div>
+    </div>
+  </section>
+</body>
+
 </html>

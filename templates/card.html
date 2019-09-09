@@ -16,13 +16,16 @@
     <div style="display:flex;justify-content: space-between">
       <a href="#" class="button is-rounded is-info is-medium" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  3}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/3" {{end}} title="Visierung mit tiefer Priorität erstellen">Tief</a>
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/3" {{end}}
+        title="Visierung mit tiefer Priorität erstellen">Tief</a>
       <a href="#" class="button is-rounded is-warning is-medium" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  2}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/2" {{end}} title="Visierung mit mittlerer Priorität erstellen">Mittel</a>
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/2" {{end}}
+        title="Visierung mit mittlerer Priorität erstellen">Mittel</a>
       <a href="#" class="button is-rounded is-danger is-medium" ic-target="#{{ .Modality }}-{{ .Department }}"
         {{if le .PriorityNumber  1}} disabled {{else}}
-        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/1" {{end}} title="Visierung mit hoher Priorität erstellen">Hoch</a>
+        ic-post-to="/modality/{{ .Modality }}/department/{{ .Department }}/prio/1" {{end}}
+        title="Visierung mit hoher Priorität erstellen">Hoch</a>
     </div>
   </div>
   <footer class="card-footer">
