@@ -25,8 +25,6 @@ var templateCardID = "card"
 var templateRadiologieID = "radiologie"
 var templateVisierungID = "visierung"
 
-
-
 func compileTemplates() {
 	{
 		indexTpl := template.Must(template.ParseFiles("templates/index.html"))
@@ -69,7 +67,7 @@ func compileTemplates() {
 				return time.Unix(now, 0).Format("2006-01-02 15:04:05")
 			},
 		}
-		
+
 		visierungTpl := template.Must(template.New("visierung.html").Funcs(funcMap).ParseFiles("templates/visierung.html"))
 		templates[templateVisierungID] = visierungTpl
 	}
@@ -190,11 +188,17 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 
 	log.Print("radiologieHandler ", department)
 
+	arduinoStatus, errStatusQuery := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, time.Now().Unix())
+	if writeInternalServerError(errStatusQuery, w) != nil {
+		return errStatusQuery
+	}
+
 	data := map[string]interface{}{
 		"Department":    department,
 		"Notifications": createNotificationTmpl(db, department),
 		"Version":       version.Version,
 		"BuildTime":     version.BuildTime,
+		"ArduinoStatus": arduinoStatus,
 	}
 
 	err := renderTemplate(w, r, templates[templateRadiologieID], data)
@@ -229,8 +233,8 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 		lmdatabase.NotificationUpdatePriority(db, notification.NotificationID, priorityNumber)
 	}
 
-	arduinoStatus, errInsert := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, now)
-	if writeInternalServerError(errInsert, w) != nil {
+	arduinoStatus, errStatusQuery := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, now)
+	if writeInternalServerError(errStatusQuery, w) != nil {
 		return errPriorityType
 	}
 
