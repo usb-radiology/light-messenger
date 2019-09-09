@@ -54,6 +54,14 @@ func compileTemplates() {
 				}
 				return priorityMap[prio]
 			},
+			"priorityName": func(prio int) string {
+				priorityMap := map[int]string{
+					1: "Hoch",
+					2: "Mittel",
+					3: "Tief",
+				}
+				return priorityMap[prio]
+			},
 			"toTime": func(now int64) string {
 				if now == -1 {
 					return ""

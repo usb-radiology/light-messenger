@@ -38,9 +38,9 @@
     </div>
   </section>
 
-  <section class="section"> 
+  <section class="section">
     <div class="container">
-        <h1 class="title" style="padding-bottom: 1rem">Visierung <span class="is-uppercase">{{ .Modality}}</span></h1>
+      <h1 class="title" style="padding-bottom: 1rem">Visierung <span class="is-uppercase">{{ .Modality}}</span></h1>
       {{ if ne .Modality "nuk"}}
       {{ if eq .Modality "ct"}}
       <div class="columns" style="background-color: #6D9274">
@@ -72,29 +72,35 @@
 
   <section class="section">
     <div class="container">
-      <h2 class="title" style="padding-bottom: 1rem">Abgeschlossene Visierungen</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Abteilung</th>
-            <th>Priority</th>
-            <th>Erstellt am</abbr></th>
-            <th>Bestätigt am</abbr></th>
-            <th>Cancelled am</abbr></th>
-          </tr>
-        </thead>
-        <tbody>
-          {{ range $n := .ProcessedNotifications }}
-          <tr>
-            <th class="is-uppercase">{{.DepartmentID}}</th>
-            <td>{{.Priority}}</td>
-            <td>{{ toTime .CreatedAt}}</td>
-            <td>{{ toTime .ConfirmedAt}}</td>
-            <td>{{ toTime .CancelledAt}}</td>
-          </tr>
-          {{end}}
-        </tbody>
-      </table>
+      <h2 class="title has-text-centered" style="padding-bottom: 1rem;text-decoration: underline">Abgeschlossene Visierungen</h2>
+      <div class="columns">
+        <div class="column is-8 is-offset-2">
+          <table class="table is-striped is-fullwidth" style="margin-left: auto;margin-right: auto;">
+            <thead>
+              <tr>
+                <th>Abteilung</th>
+                <th>Priority</th>
+                <th class="has-text-right">Erstellt am</abbr></th>
+                <th class="has-text-right">Bestätigt am</abbr></th>
+                <th class="has-text-right">Cancelled am</abbr></th>
+              </tr>
+            </thead>
+            <tbody>
+              {{ range $n := .ProcessedNotifications }}
+              <tr>
+                <th class="is-uppercase has-text-weight-normal">{{.DepartmentID}}</th>
+                <td>
+                  <div class="tag {{priorityMap .Priority}}" </div>{{priorityName .Priority}} </td> <td
+                    class="has-text-right">{{ toTime .CreatedAt}}
+                </td>
+                <td class="has-text-right">{{ toTime .ConfirmedAt}}</td>
+                <td class="has-text-right">{{ toTime .CancelledAt}}</td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </section>
