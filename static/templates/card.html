@@ -1,7 +1,7 @@
 <div class="card" id="{{ .Modality }}-{{ .Department }}">
   <header class="card-header">
     <p class="card-header-title is-uppercase is-size-4">
-      {{ .Department}}
+      <a href="/radiologie/{{.Department}}">{{ .Department}}</a>
     </p>
     <div class="tags has-addons card-header-icon">
       {{ if .PriorityName}}
