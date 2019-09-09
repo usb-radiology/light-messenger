@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -24,21 +23,30 @@ var templateIndexID = "index"
 var templateCardID = "card"
 var templateRadiologieID = "radiologie"
 var templateVisierungID = "visierung"
+var box *rice.Box
 
-func compileTemplates() {
+func compileTemplates() error {
 	{
-		indexTpl := template.Must(template.ParseFiles("templates/index.html"))
+		templateString, err := box.String("templates/index.html")
+		if err != nil {
+			return err
+		}
+		indexTpl := template.Must(template.New("index").Parse(templateString))
 		templates[templateIndexID] = indexTpl
 	}
 
 	{
-		cardTemplateHTML, _ := ioutil.ReadFile("templates/card.html")
+		cardTemplateHTML, _ := box.String("templates/card.html")
 		cardTpl := template.Must(template.New("card_view").Parse(string(cardTemplateHTML)))
 		templates[templateCardID] = cardTpl
 	}
 
 	{
-		radiologieTpl, _ := template.New("radiologie.html").ParseFiles("templates/radiologie.html")
+		templateString, err := box.String("templates/radiologie.html")
+		if err != nil {
+			return err
+		}
+		radiologieTpl, _ := template.New("radiologie").Parse(templateString)
 		templates[templateRadiologieID] = radiologieTpl
 	}
 
@@ -67,10 +75,16 @@ func compileTemplates() {
 				return time.Unix(now, 0).Format("2006-01-02 15:04:05")
 			},
 		}
+		
+		templateString, err := box.String("templates/visierung.html")
+		if err != nil {
+			return err
+		}
 
-		visierungTpl := template.Must(template.New("visierung.html").Funcs(funcMap).ParseFiles("templates/visierung.html"))
+		visierungTpl := template.Must(template.New("visierung.html").Funcs(funcMap).Parse(templateString))
 		templates[templateVisierungID] = visierungTpl
 	}
+	return nil
 }
 
 var priorityMap = map[int]string{
@@ -81,6 +95,7 @@ var priorityMap = map[int]string{
 
 // InitServer ...
 func InitServer(initConfig *configuration.Configuration) *http.Server {
+	box = rice.MustFindBox("../../static")
 	port := strconv.Itoa(initConfig.Server.HTTPPort)
 	r := getRouter(initConfig)
 	server := &http.Server{Addr: ":" + port, Handler: r}
@@ -289,13 +304,17 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{initConfig, priorityHandler})
 	r.Handle("/modality/{modality}/department/{department}/cancel", handler{initConfig, cancelHandler})
 
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(rice.MustFindBox("../../static").HTTPBox())))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
 	return r
 }
 
 // Start ...
 func Start(server *http.Server, port int) {
-	compileTemplates()
+	errCompileTemplates := compileTemplates()
+	if errCompileTemplates != nil {
+		log.Fatal(errCompileTemplates)
+		return
+	}
 
 	log.Println("Server listening on " + strconv.Itoa(port))
 

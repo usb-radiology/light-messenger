@@ -16,6 +16,7 @@ LDFLAGS=-ldflags "-X github.com/usb-radiology/light-messenger/src/version.Versio
 
 all: test build
 embed: 
+	rm src/server/rice-box.go
 	rice embed-go -v -i github.com/usb-radiology/light-messenger/src/server
 build: embed
 	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v

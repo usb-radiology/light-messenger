@@ -3,13 +3,12 @@ package server
 import (
 	"bytes"
 	"database/sql"
+	"log"
 	"text/template"
 	"time"
 
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
-
-
 
 func createNotificationTmpl(db *sql.DB, department string) string {
 	notifications, _ := lmdatabase.NotificationGetByDepartment(db, department)
@@ -30,7 +29,13 @@ func createNotificationTmpl(db *sql.DB, department string) string {
 		"Notifications": notifications,
 	}
 	var notificationsBuffer bytes.Buffer
-	notificationHTML := template.Must(template.New("notifications.html").Funcs(funcMap).ParseFiles("templates/notifications.html"))
+
+	templateString, err := box.String("templates/notifications.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	notificationHTML := template.Must(template.New("notifications").Funcs(funcMap).Parse(templateString))
 	notificationHTML.Execute(&notificationsBuffer, data)
 	return notificationsBuffer.String()
 }
