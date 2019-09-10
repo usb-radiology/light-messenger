@@ -134,8 +134,9 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write([]byte(fmt.Sprintf(";1;%v;", arduinoPrioMap[(*notifications)[0].Priority])))
+	} else {
+		w.Write([]byte(fmt.Sprintf(";0;")))
 	}
-	w.Write([]byte(fmt.Sprintf(";0;;")))
 	return nil
 
 }
