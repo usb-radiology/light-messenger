@@ -17,6 +17,22 @@ Requirements:
 - `Docker >= 19.03.2`
 - `docker-compose >= 1.21.0`
 
+Git repository structure:
+
+- `res`: resources including sql scripts to create tables and setup integration tests
+- `src`: go source code
+- `static`: static web assets including the golang html templates
+- `config-sample.json`: sample configuration in json format, note that the application binary requires a `config.json` located in the same folder to run
+- `docker-compose.yml`: docker configuration to spin up a mysql database
+- `go.mod`: go modules file
+- `go.sum`: go modules checksum file
+- `Jenkinsfile`: ci configuration
+- `LICENSE`: license
+- `light-messenger.go`: main application entry point
+- `Makefile`: build tool
+- `README.md`: this document
+- `run-dev.sh`: development script to rebuild application on code change
+
 ### setup
 
 Steps:
@@ -36,7 +52,6 @@ All commands:
 - `make test-unit` : run unit tests
 - `make test-integration` : run integration tests
 
-
 To setup a local mysql instance, create a database and user: `light_messenger` and change the values in `config.json` accordingly.
 
 To setup auto recompile on code change, use the provided `run-dev.sh` script. Note that this requires `entr` [TODO](TODO) and `ag` [TODO](TODO).
@@ -52,7 +67,7 @@ TODO:
 Systemd setup:
 
 ```systemd
-TODO: 
+TODO:
 ```
 
 Logging:
