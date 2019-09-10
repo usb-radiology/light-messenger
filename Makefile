@@ -14,23 +14,26 @@ BUILD_TIME=$(shell date +%FT%T%z)
 
 LDFLAGS=-ldflags "-X github.com/usb-radiology/light-messenger/src/version.Version=$(VERSION) -X github.com/usb-radiology/light-messenger/src/version.BuildTime=$(BUILD_TIME)"
 
-all: test build
+all: build
 embed: 
-	rm src/server/rice-box.go
+	rm -f src/server/rice-box.go
 	rice embed-go -v -i github.com/usb-radiology/light-messenger/src/server
 build: embed
 	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
+clean: 
+	rm -f src/server/rice-box.go
+	$(GOCLEAN)
+	rm -f $(BINARY_NAME)
+	rm -f $(BINARY_UNIX)
 test: embed
 	$(GOTEST) -v ./...
 test-unit: embed
 	$(GOTEST) -v -run Unit ./...
 test-integration:  embed
 	$(GOTEST) -v -run Integration ./...
-clean: 
-	rm src/server/rice-box.go
-	$(GOCLEAN)
-	rm -f $(BINARY_NAME)
-	rm -f $(BINARY_UNIX)
+test-coverage: clean embed
+	$(GOTEST) -v -coverprofile=coverage.out ./...
+	$(GOCMD) tool cover -html=coverage.out
 run: build
 	./$(BINARY_NAME)
 deps:
