@@ -42,4 +42,5 @@ func TestIntegrationShouldInsertAndGetNotification(t *testing.T) {
 	assert.Equal(t, createdAt, result.CreatedAt)
 	assert.Equal(t, int64(0), result.ConfirmedAt)
 
+	tearDownTest(t, db)
 }

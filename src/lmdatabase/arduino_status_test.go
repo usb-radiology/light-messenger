@@ -44,6 +44,7 @@ func TestIntegrationShouldInsertArduinoStatusWhenNoneExisting(t *testing.T) {
 	assert.Equal(t, result.DepartmentID, arduinoStatus.DepartmentID)
 	assert.Equal(t, result.StatusAt, arduinoStatus.StatusAt)
 
+	tearDownTest(t, db)
 }
 
 func TestIntegrationShouldInsertArduinoStatusWhenExists(t *testing.T) {
@@ -96,6 +97,7 @@ func TestIntegrationShouldInsertArduinoStatusWhenExists(t *testing.T) {
 	assert.Equal(t, result.DepartmentID, arduinoStatus.DepartmentID)
 	assert.Equal(t, result.StatusAt, arduinoStatusUpdate.StatusAt)
 
+	tearDownTest(t, db)
 }
 
 func TestIntegrationShouldNotRetrieveArduinoStatusWhenOlderThan5Minutes(t *testing.T) {
@@ -130,4 +132,6 @@ func TestIntegrationShouldNotRetrieveArduinoStatusWhenOlderThan5Minutes(t *testi
 	if result != nil {
 		t.Fail()
 	}
+
+	tearDownTest(t, db)
 }

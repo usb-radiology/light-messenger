@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -32,8 +33,14 @@ var (
 
 // InitServer ...
 func InitServer(initConfig *configuration.Configuration) *http.Server {
+	db, errDb := lmdatabase.GetDB(initConfig)
+	if errDb != nil {
+		log.Fatalf("%+v", errors.WithStack(errDb))
+		return nil
+	}
+
 	port := strconv.Itoa(initConfig.Server.HTTPPort)
-	r := getRouter(initConfig)
+	r := getRouter(initConfig, db)
 	server := &http.Server{Addr: ":" + port, Handler: r}
 	return server
 }
@@ -48,13 +55,7 @@ func Start(server *http.Server, port int) {
 	}
 }
 
-func getRouter(initConfig *configuration.Configuration) *mux.Router {
-
-	db, errDb := lmdatabase.GetDB(initConfig)
-	if errDb != nil {
-		log.Fatalf("%+v", errors.WithStack(errDb))
-		return nil
-	}
+func getRouter(initConfig *configuration.Configuration, db *sql.DB) *mux.Router {
 
 	errCompileTemplates := compileTemplates()
 	if errCompileTemplates != nil {
@@ -83,6 +84,7 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	r.Handle("/modality/{modality}/department/{department}/cancel", handler{db, initConfig, notificationCancelHandler})
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
+
 	return r
 }
 

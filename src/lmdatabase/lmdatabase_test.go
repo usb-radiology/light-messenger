@@ -51,3 +51,7 @@ func setupTest(t *testing.T) *sql.DB {
 
 	return GetTestDB(t, initConfig)
 }
+
+func tearDownTest(t *testing.T, db *sql.DB) {
+	db.Close()
+}
