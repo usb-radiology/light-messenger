@@ -20,13 +20,14 @@ embed:
 	rice embed-go -v -i github.com/usb-radiology/light-messenger/src/server
 build: embed
 	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
-test: 
+test: embed
 	$(GOTEST) -v ./...
-test-unit: 
+test-unit: embed
 	$(GOTEST) -v -run Unit ./...
-test-integration: 
+test-integration:  embed
 	$(GOTEST) -v -run Integration ./...
 clean: 
+	rm src/server/rice-box.go
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 	rm -f $(BINARY_UNIX)

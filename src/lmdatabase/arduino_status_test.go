@@ -10,7 +10,7 @@ import (
 func TestIntegrationShouldInsertArduinoStatusWhenNoneExisting(t *testing.T) {
 
 	// given
-	db := setUp(t)
+	db := setupTest(t)
 
 	departmentID := "abc"
 	var now int64
@@ -49,7 +49,7 @@ func TestIntegrationShouldInsertArduinoStatusWhenNoneExisting(t *testing.T) {
 func TestIntegrationShouldInsertArduinoStatusWhenExists(t *testing.T) {
 
 	// given
-	db := setUp(t)
+	db := setupTest(t)
 
 	departmentID := "abc"
 	var now, update int64
@@ -101,7 +101,7 @@ func TestIntegrationShouldInsertArduinoStatusWhenExists(t *testing.T) {
 func TestIntegrationShouldNotRetrieveArduinoStatusWhenOlderThan5Minutes(t *testing.T) {
 
 	// given
-	db := setUp(t)
+	db := setupTest(t)
 
 	departmentID := "abc"
 	var now int64

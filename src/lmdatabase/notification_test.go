@@ -10,7 +10,7 @@ import (
 func TestIntegrationShouldInsertAndGetNotification(t *testing.T) {
 
 	// given
-	db := setUp(t)
+	db := setupTest(t)
 
 	departmentID := "abc"
 	modality := "def"

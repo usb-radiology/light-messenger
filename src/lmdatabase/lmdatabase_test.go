@@ -11,12 +11,7 @@ import (
 
 var statements []string
 
-func setUp(t *testing.T) *sql.DB {
-	initConfig, err := configuration.LoadAndSetConfiguration("../../config-sample.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-
+func GetTestDB(t *testing.T, initConfig *configuration.Configuration) *sql.DB {
 	db, errDb := GetDB(initConfig)
 	if errDb != nil {
 		t.Fatal(errDb)
@@ -46,4 +41,13 @@ func setUp(t *testing.T) *sql.DB {
 	*/
 
 	return db
+}
+
+func setupTest(t *testing.T) *sql.DB {
+	initConfig, err := configuration.LoadAndSetConfiguration(filepath.Join("..", "..", "config-sample.json"))
+	if err != nil {
+		t.Fatalf("%+v", errors.WithStack(err))
+	}
+
+	return GetTestDB(t, initConfig)
 }
