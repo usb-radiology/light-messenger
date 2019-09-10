@@ -22,10 +22,11 @@ func TestIntegrationArduinoStatusShouldLogAtGivenTime(t *testing.T) {
 
 	// when
 
-	response, err := http.Get(server.URL + "/nce-rest/arduino-status/" + departmentID + "-status")
-	if err != nil {
-		t.Fatalf("%+v", errors.WithStack(err))
+	response, errHTTPGet := http.Get(server.URL + "/nce-rest/arduino-status/" + departmentID + "-status")
+	if errHTTPGet != nil {
+		t.Fatalf("%+v", errors.WithStack(errHTTPGet))
 	}
+	defer response.Body.Close()
 
 	// then
 	assert.Equal(t, http.StatusOK, response.StatusCode)
@@ -40,7 +41,7 @@ func TestIntegrationArduinoStatusShouldLogAtGivenTime(t *testing.T) {
 	}
 
 	assert.Equal(t, departmentID, result.DepartmentID)
-	assert.GreaterOrEqual(t, now, result.StatusAt)
+	assert.LessOrEqual(t, now, result.StatusAt)
 
 	tearDownTest(t, server, db)
 }
@@ -68,6 +69,7 @@ func TestIntegrationArduinoGetOpenNotificationsShouldGetHighPriorityNotification
 	if errHTTPGet != nil {
 		t.Fatalf("%+v", errors.WithStack(errHTTPGet))
 	}
+	defer response.Body.Close()
 
 	// then
 	assert.Equal(t, http.StatusOK, response.StatusCode)
@@ -104,6 +106,7 @@ func TestIntegrationArduinoGetOpenNotificationsShouldGetMediumPriorityNotificati
 	if errHTTPGet != nil {
 		t.Fatalf("%+v", errors.WithStack(errHTTPGet))
 	}
+	defer response.Body.Close()
 
 	// then
 	assert.Equal(t, http.StatusOK, response.StatusCode)
@@ -140,6 +143,7 @@ func TestIntegrationArduinoGetOpenNotificationsShouldGetLowPriorityNotificationW
 	if errHTTPGet != nil {
 		t.Fatalf("%+v", errors.WithStack(errHTTPGet))
 	}
+	defer response.Body.Close()
 
 	// then
 	assert.Equal(t, http.StatusOK, response.StatusCode)
@@ -170,6 +174,7 @@ func TestIntegrationArduinoGetOpenNotificationsShouldGet0WhenNoNotificationsExis
 	if errHTTPGet != nil {
 		t.Fatalf("%+v", errors.WithStack(errHTTPGet))
 	}
+	defer response.Body.Close()
 
 	// then
 	assert.Equal(t, http.StatusOK, response.StatusCode)

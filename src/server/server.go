@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -175,6 +176,15 @@ func writeBytes(w http.ResponseWriter, bytes []byte) error {
 	}
 
 	return nil
+}
+
+func writeJSON(w http.ResponseWriter, data map[string]interface{}) error {
+	jsonString, errJSONMarshal := json.Marshal(data)
+	if writeInternalServerError(errJSONMarshal, w) != nil {
+		return errJSONMarshal
+	}
+	return writeBytes(w, jsonString)
+
 }
 
 func writeInternalServerError(err error, w http.ResponseWriter) error {

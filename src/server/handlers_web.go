@@ -83,6 +83,10 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 		"ProcessedNotifications": processedNotifications,
 	}
 
+	if r.Header.Get("Content-Type") == "text/json" {
+		return writeJSON(w, data)
+	}
+
 	errRenderTemplate := renderTemplate(w, r, templates[templateVisierungID], data)
 	if writeInternalServerError(errRenderTemplate, w) != nil {
 		return errRenderTemplate
@@ -116,6 +120,10 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 		"Version":       version.Version,
 		"BuildTime":     version.BuildTime,
 		"ArduinoStatus": arduinoStatus,
+	}
+
+	if r.Header.Get("Content-Type") == "text/json" {
+		return writeJSON(w, data)
 	}
 
 	errRenderTemplate := renderTemplate(w, r, templates[templateRadiologieID], data)
@@ -180,6 +188,10 @@ func notificationCreateHandler(config *configuration.Configuration, db *sql.DB, 
 		"CreatedAt":      time.Unix(now, 0).Format("15:04:05"),
 	}
 
+	if r.Header.Get("Content-Type") == "text/json" {
+		return writeJSON(w, data)
+	}
+
 	errRenderTemplateName := renderTemplateName(w, r, templates[templateCardID], "card_view", data)
 	if writeInternalServerError(errRenderTemplateName, w) != nil {
 		return errRenderTemplateName
@@ -203,6 +215,10 @@ func notificationCancelHandler(config *configuration.Configuration, db *sql.DB, 
 	errNotificationCancel := lmdatabase.NotificationCancel(db, modality, department, time.Now().Unix())
 	if writeInternalServerError(errNotificationCancel, w) != nil {
 		return errNotificationCancel
+	}
+
+	if r.Header.Get("Content-Type") == "text/json" {
+		return writeJSON(w, data)
 	}
 
 	errRenderTemplateName := renderTemplateName(w, r, templates[templateCardID], "card_view", data)
