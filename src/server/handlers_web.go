@@ -13,6 +13,10 @@ import (
 	"github.com/usb-radiology/light-messenger/src/version"
 )
 
+//
+// index
+//
+
 func mainHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
 	data := map[string]interface{}{
@@ -28,6 +32,10 @@ func mainHandler(config *configuration.Configuration, db *sql.DB, w http.Respons
 	return nil
 }
 
+//
+// MTRA
+//
+
 func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
 	vars := mux.Vars(r)
@@ -38,13 +46,38 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 		return errNotificationGetByModality
 	}
 
+	aodCardHTML, errAodCardHTML := getCardHTML(db, modality, "aod")
+	if writeInternalServerError(errAodCardHTML, w) != nil {
+		return errAodCardHTML
+	}
+
+	ctdCardHTML, errCtdCardHTML := getCardHTML(db, modality, "ctd")
+	if writeInternalServerError(errCtdCardHTML, w) != nil {
+		return errCtdCardHTML
+	}
+
+	mskCardHTML, errMskCardHTML := getCardHTML(db, modality, "msk")
+	if writeInternalServerError(errMskCardHTML, w) != nil {
+		return errMskCardHTML
+	}
+
+	nrCardHTML, errNrCardHTML := getCardHTML(db, modality, "nr")
+	if writeInternalServerError(errNrCardHTML, w) != nil {
+		return errNrCardHTML
+	}
+
+	nukCardHTML, errNukCardHTML := getCardHTML(db, modality, "nuk")
+	if writeInternalServerError(errNukCardHTML, w) != nil {
+		return errNukCardHTML
+	}
+
 	data := map[string]interface{}{
 		"Modality":               modality,
-		"AOD":                    getCardHTML(db, modality, "aod"),
-		"CTD":                    getCardHTML(db, modality, "ctd"),
-		"MSK":                    getCardHTML(db, modality, "msk"),
-		"NR":                     getCardHTML(db, modality, "nr"),
-		"NUK_NUK":                getCardHTML(db, modality, "nuk"),
+		"AOD":                    aodCardHTML,
+		"CTD":                    ctdCardHTML,
+		"MSK":                    mskCardHTML,
+		"NR":                     nrCardHTML,
+		"NUK_NUK":                nukCardHTML,
 		"Version":                version.Version,
 		"BuildTime":              version.BuildTime,
 		"ProcessedNotifications": processedNotifications,
@@ -58,19 +91,9 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 	return nil
 }
 
-func confirmHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
-	w.Header().Set("X-IC-Remove", "true")
-
-	vars := mux.Vars(r)
-	notificationID := vars["id"]
-
-	errNotificationConfirm := lmdatabase.NotificationConfirm(db, notificationID, time.Now().Unix())
-	if writeInternalServerError(errNotificationConfirm, w) != nil {
-		return errNotificationConfirm
-	}
-
-	return nil
-}
+//
+// Radiology
+//
 
 func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
@@ -82,9 +105,14 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 		return errStatusQuery
 	}
 
+	notificationsHTML, errNotificationsHTML := getNotificationsHTML(db, department)
+	if writeInternalServerError(errNotificationsHTML, w) != nil {
+		return errNotificationsHTML
+	}
+
 	data := map[string]interface{}{
 		"Department":    department,
-		"Notifications": getNotificationHTML(db, department),
+		"Notifications": notificationsHTML,
 		"Version":       version.Version,
 		"BuildTime":     version.BuildTime,
 		"ArduinoStatus": arduinoStatus,
@@ -98,7 +126,11 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 	return nil
 }
 
-func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+//
+// Notifications
+//
+
+func notificationCreateHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
 	vars := mux.Vars(r)
 	modality := vars["modality"]
@@ -156,7 +188,7 @@ func priorityHandler(config *configuration.Configuration, db *sql.DB, w http.Res
 	return nil
 }
 
-func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+func notificationCancelHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
 
 	vars := mux.Vars(r)
 	modality := vars["modality"]
@@ -176,6 +208,20 @@ func cancelHandler(config *configuration.Configuration, db *sql.DB, w http.Respo
 	errRenderTemplateName := renderTemplateName(w, r, templates[templateCardID], "card_view", data)
 	if writeInternalServerError(errRenderTemplateName, w) != nil {
 		return errRenderTemplateName
+	}
+
+	return nil
+}
+
+func notificationConfirmHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("X-IC-Remove", "true")
+
+	vars := mux.Vars(r)
+	notificationID := vars["id"]
+
+	errNotificationConfirm := lmdatabase.NotificationConfirm(db, notificationID, time.Now().Unix())
+	if writeInternalServerError(errNotificationConfirm, w) != nil {
+		return errNotificationConfirm
 	}
 
 	return nil

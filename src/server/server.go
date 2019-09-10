@@ -63,14 +63,24 @@ func getRouter(initConfig *configuration.Configuration) *mux.Router {
 	}
 
 	r := mux.NewRouter()
+
+	// index
 	r.Handle("/", handler{db, initConfig, mainHandler})
+
+	// MTRA
 	r.Handle("/mtra/{modality}", handler{db, initConfig, visierungHandler})
+
+	// Radiology
 	r.Handle("/radiologie/{department}", handler{db, initConfig, radiologieHandler})
+
+	// arduino
 	r.Handle("/nce-rest/arduino-status/{department}-status", handler{db, initConfig, arduinoStatusHandler})
 	r.Handle("/nce-rest/arduino-status/{department}-open-notifications", handler{db, initConfig, openStatusHandler})
-	r.Handle("/notification/{department}/{id}", handler{db, initConfig, confirmHandler})
-	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{db, initConfig, priorityHandler})
-	r.Handle("/modality/{modality}/department/{department}/cancel", handler{db, initConfig, cancelHandler})
+
+	// notifications
+	r.Handle("/modality/{modality}/department/{department}/prio/{priority}", handler{db, initConfig, notificationCreateHandler})
+	r.Handle("/notification/{department}/{id}", handler{db, initConfig, notificationConfirmHandler}) // TODO: get rid of the department here?
+	r.Handle("/modality/{modality}/department/{department}/cancel", handler{db, initConfig, notificationCancelHandler})
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(box.HTTPBox())))
 	return r
@@ -104,11 +114,6 @@ func compileTemplates() error {
 	{
 		funcMap := template.FuncMap{
 			"priorityMap": func(prio int) string {
-				priorityMap := map[int]string{
-					1: "is-danger",
-					2: "is-warning",
-					3: "is-info",
-				}
 				return priorityMap[prio]
 			},
 			"priorityName": func(prio int) string {
