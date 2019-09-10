@@ -1,14 +1,8 @@
-DROP TABLE IF EXISTS `ArduinoStatus`;
-
 CREATE TABLE `ArduinoStatus` (
   `departmentId` varchar(255) NOT NULL,
   `statusAt` bigint NOT NULL,
   PRIMARY KEY (`departmentId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- 2016/10/27 15:35:25
-
-DROP TABLE IF EXISTS `Notification`;
 
 CREATE TABLE `Notification` (
   `notificationId` varchar(255) NOT NULL,
