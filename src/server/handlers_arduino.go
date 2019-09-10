@@ -12,6 +12,8 @@ import (
 )
 
 func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueText)
+
 	vars := mux.Vars(r)
 	department := vars["department"]
 
@@ -38,6 +40,8 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 }
 
 func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueText)
+
 	vars := mux.Vars(r)
 	department := vars["department"]
 

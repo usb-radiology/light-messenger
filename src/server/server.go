@@ -24,8 +24,9 @@ const (
 	templateRadiologieID           = "radiologie"
 	templateVisierungID            = "visierung"
 	HTMLHeaderContentType          = "content-type"
-	HTMLHeaderContentTypeValueJSON = "text/json"
-	HTMLHeaderContentTypeValueHTML = "text/html"
+	HTMLHeaderContentTypeValueJSON = "text/json; charset=utf-8"
+	HTMLHeaderContentTypeValueHTML = "text/html; charset=utf-8"
+	HTMLHeaderContentTypeValueText = "text/plain; charset=utf-8"
 )
 
 var (
