@@ -11,7 +11,12 @@ import (
 )
 
 func getCardHTML(db *sql.DB, modality string, department string) string {
-
+	now := time.Now().Unix()
+	arduinoStatus, errStatusQuery := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, now)
+	if errStatusQuery != nil {
+		return ""
+	}
+	
 	notification, _ := lmdatabase.NotificationGetByDepartmentAndModality(db, department, modality)
 	// AOD Card Template
 	data := map[string]interface{}{
@@ -19,6 +24,7 @@ func getCardHTML(db *sql.DB, modality string, department string) string {
 		"Department":     notification.DepartmentID,
 		"PriorityNumber": notification.Priority,
 		"PriorityName":   priorityMap[notification.Priority],
+		"ArduinoStatus":  arduinoStatus,
 		"CreatedAt":      time.Unix(notification.CreatedAt, 0).Format("15:04:05"),
 	}
 
