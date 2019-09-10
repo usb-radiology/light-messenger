@@ -125,7 +125,6 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 	department := vars["department"]
 
 	notifications, _ := lmdatabase.NotificationGetByDepartment(db, department)
-
 	if len(*notifications) > 0 {
 		arduinoPrioMap := map[int]string{
 			1: "HIGH",
@@ -134,9 +133,9 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 		}
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 		w.Write([]byte(fmt.Sprintf(";1;%v;", arduinoPrioMap[(*notifications)[0].Priority])))
 	}
+	w.Write([]byte(fmt.Sprintf(";0;;")))
 	return nil
 
 }

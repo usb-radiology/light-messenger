@@ -89,11 +89,12 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 		ASC`
 
 	rows, errQuery := db.Query(queryStmt, department)
+	openNotifications := make([]Notification, 0)
 	if errQuery != nil {
-		return nil, errQuery
+		return &openNotifications, errQuery
 	}
 	defer rows.Close()
-	openNotifications := make([]Notification, 0)
+	
 
 	for rows.Next() {
 		var notification Notification
