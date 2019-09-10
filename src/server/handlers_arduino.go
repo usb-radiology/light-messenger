@@ -53,8 +53,6 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 			3: "LOW",
 		}
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 		{
 			errWrite := writeBytes(w, []byte(fmt.Sprintf(";1;%v;", arduinoPrioMap[(*notifications)[0].Priority])))
 			if writeInternalServerError(errWrite, w) != nil {

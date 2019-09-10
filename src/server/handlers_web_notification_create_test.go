@@ -28,7 +28,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.
 	// when
 
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set("Content-Type", "text/json")
+	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
 	client := &http.Client{}
 
 	response, err := client.Do(request)
@@ -116,7 +116,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForMediumPriority(t *testi
 	// when
 
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set("Content-Type", "text/json")
+	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
 	client := &http.Client{}
 
 	response, err := client.Do(request)
@@ -172,7 +172,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriority(t *testing
 	// when
 
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set("Content-Type", "text/json")
+	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
 	client := &http.Client{}
 
 	response, err := client.Do(request)
@@ -238,7 +238,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriorityAndArduinoS
 	// when
 
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set("Content-Type", "text/json")
+	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
 	client := &http.Client{}
 
 	response, err := client.Do(request)

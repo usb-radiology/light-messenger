@@ -14,7 +14,6 @@ type handler struct {
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err := h.routeHandler(h.initConfig, h.db, w, r)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError),

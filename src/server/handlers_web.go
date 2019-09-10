@@ -83,7 +83,7 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 		"ProcessedNotifications": processedNotifications,
 	}
 
-	if r.Header.Get("Content-Type") == "text/json" {
+	if r.Header.Get(HTMLHeaderContentType) == "text/json" {
 		return writeJSON(w, data)
 	}
 
@@ -122,7 +122,7 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 		"ArduinoStatus": arduinoStatus,
 	}
 
-	if r.Header.Get("Content-Type") == "text/json" {
+	if r.Header.Get(HTMLHeaderContentType) == HTMLHeaderContentTypeValueJSON {
 		return writeJSON(w, data)
 	}
 
@@ -188,7 +188,7 @@ func notificationCreateHandler(config *configuration.Configuration, db *sql.DB, 
 		"CreatedAt":      time.Unix(now, 0).Format("15:04:05"),
 	}
 
-	if r.Header.Get("Content-Type") == "text/json" {
+	if r.Header.Get(HTMLHeaderContentType) == HTMLHeaderContentTypeValueJSON {
 		return writeJSON(w, data)
 	}
 
@@ -217,7 +217,7 @@ func notificationCancelHandler(config *configuration.Configuration, db *sql.DB, 
 		return errNotificationCancel
 	}
 
-	if r.Header.Get("Content-Type") == "text/json" {
+	if r.Header.Get(HTMLHeaderContentType) == HTMLHeaderContentTypeValueJSON {
 		return writeJSON(w, data)
 	}
 

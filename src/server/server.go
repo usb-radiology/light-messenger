@@ -18,14 +18,20 @@ import (
 )
 
 // globals ...
+const (
+	templateIndexID                = "index"
+	templateCardID                 = "card"
+	templateRadiologieID           = "radiologie"
+	templateVisierungID            = "visierung"
+	HTMLHeaderContentType          = "content-type"
+	HTMLHeaderContentTypeValueJSON = "text/json"
+	HTMLHeaderContentTypeValueHTML = "text/html"
+)
+
 var (
-	templates            = make(map[string]*template.Template)
-	templateIndexID      = "index"
-	templateCardID       = "card"
-	templateRadiologieID = "radiologie"
-	templateVisierungID  = "visierung"
-	box                  = rice.MustFindBox("../../static")
-	priorityMap          = map[int]string{
+	templates   = make(map[string]*template.Template)
+	box         = rice.MustFindBox("../../static")
+	priorityMap = map[int]string{
 		1: "is-danger",
 		2: "is-warning",
 		3: "is-info",
@@ -147,6 +153,8 @@ func compileTemplates() error {
 }
 
 func renderTemplateName(w http.ResponseWriter, r *http.Request, tpl *template.Template, name string, data interface{}) error {
+	w.Header().Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueHTML)
+
 	buf := new(bytes.Buffer)
 	err := tpl.ExecuteTemplate(buf, name, data)
 	if err != nil {
@@ -162,6 +170,8 @@ func renderTemplateName(w http.ResponseWriter, r *http.Request, tpl *template.Te
 }
 
 func renderTemplate(w http.ResponseWriter, r *http.Request, tpl *template.Template, data interface{}) error {
+	w.Header().Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueHTML)
+
 	err := tpl.Execute(w, data)
 	if writeInternalServerError(err, w) != nil {
 		return err
@@ -179,6 +189,8 @@ func writeBytes(w http.ResponseWriter, bytes []byte) error {
 }
 
 func writeJSON(w http.ResponseWriter, data map[string]interface{}) error {
+	w.Header().Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
+
 	jsonString, errJSONMarshal := json.Marshal(data)
 	if writeInternalServerError(errJSONMarshal, w) != nil {
 		return errJSONMarshal
