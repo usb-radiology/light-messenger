@@ -1,14 +1,38 @@
-# light-messenger
+# Light-Messenger
 
-A web application that allows MTRAs to communicate case priorities with Radiologists. The MTRAs use a ui which allows them to create notifications with a certain priority. On the other side, the radiologists are presented with a list of notifications regarding cases that need to be acknowledged.
 
-This application also supports an arduino that can hook into the application via a REST API and flash an LED in case there is a notification open so that the Radiologist can acknowledge the notification.
+## Why
+The Light-Messenger helps MTRAs to communicate with radiologist without calling
+them on the phone. If a case is urgent and the radiologist on duty needs to
+schedule the right sequence the MTRAs are calling via phone. This is quick and
+well established however it has the downside of interrupting the radiologist on duty,
+because most of the time is doing case reading and all the collegues around.
+Instead of calling the radiologist the MTRAs can send a ambient light signal to
+the department which is not disturbing and has less effect of interruption.
 
-TODO: screenshots
+## How
+Light-Messenger is a web application with the Arduino code to provide the full
+setup of the solution described above. The MTRAs use a ui which allows them to
+create notifications with three different priorities. On the other side, the
+radiologists are presented with a list of open notifications regarding cases
+that need to be acknowledged.
 
-## development
+This application also supports an arduino that can hook into the application
+via a REST API and flash an LED in case there is a notification open so that
+the Radiologist can acknowledge the notification.
 
-The development environment uses docker to spin up a local mysql instance. This can be replaced by a local mysql instance if required.
+This is a screenshot of how it looks on the MTRAs side
+![Alt text](mtra.png?raw=true "MTRA screen")
+
+
+This is a screenshot of how it looks for the radiologist department
+![Alt text](department.png?raw=true "MTRA screen")
+
+
+## Development
+
+The development environment uses docker to spin up a local mysql instance.
+This can be replaced by a local mysql instance if required.
 
 Requirements:
 
