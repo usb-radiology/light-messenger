@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -45,6 +46,55 @@ func TestIntegrationVisierungShouldReturnJSONForAllCards(t *testing.T) {
 	assertNotificationHTMLMediumPriority(t, getDocument(t, responseBodyStrings["NR"].(string)), modality, "nr", now)
 	assertNotificationHTMLMediumPriority(t, getDocument(t, responseBodyStrings["NUK_NUK"].(string)), modality, "nuk", now)
 	assert.Empty(t, responseBodyStrings["ProcessedNotifications"])
+
+	tearDownTest(t, server, db)
+}
+
+func TestIntegrationVisierungShouldReturnJSONWithProcessedNotifications(t *testing.T) {
+
+	// given
+	server, db := setupTest(t)
+
+	var (
+		modality    = "x"
+		priorityInt = 2
+		now         = time.Now()
+		// priority               = "3"
+		// priorityNumber float64 = 3
+	)
+
+	testNotificationInsert(t, db, "aod", priorityInt, modality, now.Unix()-1000) // cancelled
+	testNotificationInsert(t, db, "ctd", priorityInt, modality, now.Unix()-500)  // confirmed
+
+	errNotificationCancel := lmdatabase.NotificationCancel(db, modality, "aod", now.Unix()-2)
+	if errNotificationCancel != nil {
+		t.Fatalf("%+v", errors.WithStack(errNotificationCancel))
+	}
+
+	notification, errNotificationGetByDepartmentAndModality := lmdatabase.NotificationGetByDepartmentAndModality(db, "ctd", modality)
+	if errNotificationGetByDepartmentAndModality != nil {
+		t.Fatalf("%+v", errors.WithStack(errNotificationGetByDepartmentAndModality))
+	}
+
+	errNotificationConfirm := lmdatabase.NotificationConfirm(db, notification.NotificationID, now.Unix())
+	if errNotificationConfirm != nil {
+		t.Fatalf("%+v", errors.WithStack(errNotificationConfirm))
+	}
+
+	// when
+	request, _ := http.NewRequest("GET", server.URL+"/mtra/"+modality, nil)
+
+	// then
+	responseBodyStrings := getResponseBodyStrings(t, request)
+	processedNotifications := responseBodyStrings["ProcessedNotifications"].([]interface{})
+
+	fmt.Printf("%+v", processedNotifications)
+	assert.NotEmpty(t, processedNotifications)
+
+	var processedNotification map[string]interface{}
+
+	processedNotification = processedNotifications[0].(map[string]interface{})
+	assert.Equal(t, "ctd", processedNotification["DepartmentID"].(string))
 
 	tearDownTest(t, server, db)
 }
