@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -10,49 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
-
-func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.T) {
-
-	// given
-	server, db := setupTest(t)
-
-	var (
-		department = "abc"
-		modality   = "x"
-		priority   = "3"
-		now        = time.Now()
-	)
-
-	// when
-	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-
-	// then
-	doc := getResponseHTMLDoc(t, request)
-
-	fmt.Print(doc.Html())
-
-	titleLinkSelection := doc.Find("header .card-header-title a")
-	assert.Equal(t, 1, titleLinkSelection.Length())
-
-	headerTagsSelection := doc.Find("header div.tags").Children()
-	assert.Equal(t, 3, headerTagsSelection.Length())
-
-	headerTagsSelection.Each(func(i int, s *goquery.Selection) {
-		if i == 0 {
-			assert.Equal(t, "Offen", s.Text())
-			assert.True(t, s.HasClass("is-info"))
-		}
-		if i == 1 {
-			assertExpectedTimeIsLessThanActualTime(t, now, s.Text())
-		}
-		if i == 2 {
-			assert.True(t, s.HasClass("is-delete"))
-			assert.Equal(t, "/modality/"+modality+"/department/"+department+"/cancel", s.AttrOr("ic-post-to", ""))
-		}
-	})
-
-	tearDownTest(t, server, db)
-}
 
 func TestIntegrationNotificationCreateShouldReturnJSONForLowPriority(t *testing.T) {
 
@@ -183,6 +139,88 @@ func TestIntegrationNotificationCreateShouldReturnJSONForHighPriorityAndArduinoS
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
 	assert.Equal(t, "is-danger", responseBodyStrings["PriorityName"])
 	assert.Equal(t, priorityNumber, responseBodyStrings["PriorityNumber"])
+
+	tearDownTest(t, server, db)
+}
+
+func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.T) {
+
+	// given
+	server, db := setupTest(t)
+
+	var (
+		department = "abc"
+		modality   = "x"
+		priority   = "3"
+		now        = time.Now()
+	)
+
+	// when
+	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
+
+	// then
+	doc := getResponseHTMLDoc(t, request)
+
+	// fmt.Print(doc.Html())
+
+	titleLinkSelection := doc.Find("header .card-header-title a")
+	assert.Equal(t, 1, titleLinkSelection.Length())
+
+	headerTagsSelection := doc.Find("header div.tags").Children()
+	assert.Equal(t, 3, headerTagsSelection.Length())
+
+	headerTagsSelection.Each(func(i int, s *goquery.Selection) {
+		if i == 0 {
+			assert.Equal(t, "Offen", s.Text())
+			assert.True(t, s.HasClass("is-info"))
+		}
+		if i == 1 {
+			assertExpectedTimeIsLessThanActualTime(t, now, s.Text())
+		}
+		if i == 2 {
+			assert.True(t, s.HasClass("is-delete"))
+			assert.Equal(t, "/modality/"+modality+"/department/"+department+"/cancel", s.AttrOr("ic-post-to", ""))
+		}
+	})
+
+	priorityButtonsSelection := doc.Find("div.card-content a.button")
+	assert.Equal(t, 3, priorityButtonsSelection.Length())
+
+	priorityButtonsSelection.Each(func(i int, s *goquery.Selection) {
+		_, existsDisabledAttr := s.Attr("disabled")
+		_, existsIcPostToAttr := s.Attr("ic-post-to")
+
+		if i == 0 {
+			assert.True(t, s.HasClass("is-info"))
+			assert.True(t, existsDisabledAttr)
+			assert.False(t, existsIcPostToAttr)
+		}
+		if i == 1 {
+			assert.True(t, s.HasClass("is-warning"))
+			assert.False(t, existsDisabledAttr)
+			assert.True(t, existsIcPostToAttr)
+		}
+		if i == 2 {
+			assert.False(t, existsDisabledAttr)
+			assert.True(t, existsIcPostToAttr)
+		}
+	})
+
+	cardFooterItemsSelection := doc.Find("div.card-footer-item div.column")
+	assert.Equal(t, 2, cardFooterItemsSelection.Length())
+
+	cardFooterItemsSelection.Each(func(i int, s *goquery.Selection) {
+		if i == 0 {
+
+			assert.Equal(t, "Arduino Status", s.Children().First().Text())
+		}
+		if i == 1 {
+			assert.True(t, s.HasClass("has-text-danger"))
+			arduinoStatusIconSelection := s.Children().First()
+			assert.True(t, arduinoStatusIconSelection.HasClass("fa-ban"))
+			assert.Equal(t, "Kein Signal vom Arduino", arduinoStatusIconSelection.AttrOr("title", ""))
+		}
+	})
 
 	tearDownTest(t, server, db)
 }
