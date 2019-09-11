@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
@@ -30,7 +29,7 @@ func TestIntegrationNotificationCreateShouldReturnJSONForLowPriority(t *testing.
 	responseBodyStrings := getResponseBodyStrings(t, request)
 
 	assert.Nil(t, responseBodyStrings["ArduinoStatus"])
-	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
+	assertNotificationCardExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
@@ -60,7 +59,7 @@ func TestIntegrationNotificationCreateShouldReturnJSONForMediumPriority(t *testi
 	responseBodyStrings := getResponseBodyStrings(t, request)
 
 	assert.Nil(t, responseBodyStrings["ArduinoStatus"])
-	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
+	assertNotificationCardExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
@@ -90,7 +89,7 @@ func TestIntegrationNotificationCreateShouldReturnJSONForHighPriority(t *testing
 	responseBodyStrings := getResponseBodyStrings(t, request)
 
 	assert.Nil(t, responseBodyStrings["ArduinoStatus"])
-	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
+	assertNotificationCardExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
@@ -133,7 +132,7 @@ func TestIntegrationNotificationCreateShouldReturnJSONForHighPriorityAndArduinoS
 	arduinoStatusStrings := responseBodyStrings["ArduinoStatus"].(map[string]interface{})
 	assert.Equal(t, department, arduinoStatusStrings["DepartmentID"])
 	assert.Equal(t, float64(arduinoStatus.StatusAt), arduinoStatusStrings["StatusAt"])
-	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
+	assertNotificationCardExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
@@ -143,7 +142,7 @@ func TestIntegrationNotificationCreateShouldReturnJSONForHighPriorityAndArduinoS
 	tearDownTest(t, server, db)
 }
 
-func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.T) {
+func TestIntegrationNotificationCreateShouldReturnHTMLForMediumPriority(t *testing.T) {
 
 	// given
 	server, db := setupTest(t)
@@ -151,7 +150,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.
 	var (
 		department = "abc"
 		modality   = "x"
-		priority   = "3"
+		priority   = "2"
 		now        = time.Now()
 	)
 
@@ -163,73 +162,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.
 
 	// fmt.Print(doc.Html())
 
-	titleLinkSelection := doc.Find("header .card-header-title a")
-	assert.Equal(t, 1, titleLinkSelection.Length())
-
-	headerTagsSelection := doc.Find("header div.tags").Children()
-	assert.Equal(t, 3, headerTagsSelection.Length())
-
-	headerTagsSelection.Each(func(i int, s *goquery.Selection) {
-		if i == 0 {
-			assert.Equal(t, "Offen", s.Text())
-			assert.True(t, s.HasClass("is-info"))
-		}
-		if i == 1 {
-			assertExpectedTimeIsLessThanActualTime(t, now, s.Text())
-		}
-		if i == 2 {
-			assert.True(t, s.HasClass("is-delete"))
-			assert.Equal(t, "/modality/"+modality+"/department/"+department+"/cancel", s.AttrOr("ic-post-to", ""))
-		}
-	})
-
-	priorityButtonsSelection := doc.Find("div.card-content a.button")
-	assert.Equal(t, 3, priorityButtonsSelection.Length())
-
-	priorityButtonsSelection.Each(func(i int, s *goquery.Selection) {
-		_, existsDisabledAttr := s.Attr("disabled")
-		_, existsIcPostToAttr := s.Attr("ic-post-to")
-
-		if i == 0 {
-			assert.True(t, s.HasClass("is-info"))
-			assert.True(t, existsDisabledAttr)
-			assert.False(t, existsIcPostToAttr)
-		}
-		if i == 1 {
-			assert.True(t, s.HasClass("is-warning"))
-			assert.False(t, existsDisabledAttr)
-			assert.True(t, existsIcPostToAttr)
-		}
-		if i == 2 {
-			assert.False(t, existsDisabledAttr)
-			assert.True(t, existsIcPostToAttr)
-		}
-	})
-
-	cardFooterItemsSelection := doc.Find("div.card-footer-item div.column")
-	assert.Equal(t, 2, cardFooterItemsSelection.Length())
-
-	cardFooterItemsSelection.Each(func(i int, s *goquery.Selection) {
-		if i == 0 {
-
-			assert.Equal(t, "Arduino Status", s.Children().First().Text())
-		}
-		if i == 1 {
-			assert.True(t, s.HasClass("has-text-danger"))
-			arduinoStatusIconSelection := s.Children().First()
-			assert.True(t, arduinoStatusIconSelection.HasClass("fa-ban"))
-			assert.Equal(t, "Kein Signal vom Arduino", arduinoStatusIconSelection.AttrOr("title", ""))
-		}
-	})
+	assertNotificationHTMLMediumPriority(t, doc, modality, department, now)
 
 	tearDownTest(t, server, db)
-}
-
-func assertExpectedTimeIsLessThanActualTime(t *testing.T, expectedTime time.Time, actualTimeStr string) {
-	actualTime, errTimeParse := time.Parse("2006-01-02 15:04:05", expectedTime.Format("2006-01-02 ")+actualTimeStr)
-	if errTimeParse != nil {
-		t.Fatalf("%+v", errTimeParse)
-	}
-	// fmt.Printf("%d %d %s", now.Unix(), actualTime.Unix(), s.Text())
-	assert.LessOrEqual(t, expectedTime.Unix(), actualTime.Unix())
 }

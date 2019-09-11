@@ -83,7 +83,7 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 		"ProcessedNotifications": processedNotifications,
 	}
 
-	if r.Header.Get(HTMLHeaderContentType) == "text/json" {
+	if r.Header.Get(HTMLHeaderContentType) == HTMLHeaderContentTypeValueJSON {
 		return writeJSON(w, data)
 	}
 
