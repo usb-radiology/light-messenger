@@ -1,18 +1,60 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
 
 func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.T) {
+
+	// given
+	server, db := setupTest(t)
+
+	var (
+		department = "abc"
+		modality   = "x"
+		priority   = "3"
+		now        = time.Now()
+	)
+
+	// when
+	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
+
+	// then
+	doc := getResponseHTMLDoc(t, request)
+
+	fmt.Print(doc.Html())
+
+	titleLinkSelection := doc.Find("header .card-header-title a")
+	assert.Equal(t, 1, titleLinkSelection.Length())
+
+	headerTagsSelection := doc.Find("header div.tags").Children()
+	assert.Equal(t, 3, headerTagsSelection.Length())
+
+	headerTagsSelection.Each(func(i int, s *goquery.Selection) {
+		if i == 0 {
+			assert.Equal(t, "Offen", s.Text())
+			assert.True(t, s.HasClass("is-info"))
+		}
+		if i == 1 {
+			assertExpectedTimeIsLessThanActualTime(t, now, s.Text())
+		}
+		if i == 2 {
+			assert.True(t, s.HasClass("is-delete"))
+			assert.Equal(t, "/modality/"+modality+"/department/"+department+"/cancel", s.AttrOr("ic-post-to", ""))
+		}
+	})
+
+	tearDownTest(t, server, db)
+}
+
+func TestIntegrationNotificationCreateShouldReturnJSONForLowPriority(t *testing.T) {
 
 	// given
 	server, db := setupTest(t)
@@ -26,81 +68,23 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForLowPriority(t *testing.
 	)
 
 	// when
-
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
-	client := &http.Client{}
-
-	response, err := client.Do(request)
-	if err != nil {
-		t.Fatalf("%+v", errors.WithStack(err))
-	}
-	defer response.Body.Close()
 
 	// then
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-
-	var responseBody interface{}
-	errJSONDecode := json.NewDecoder(response.Body).Decode(&responseBody)
-	if errJSONDecode != nil {
-		t.Fatalf("%+v", errJSONDecode)
-	}
-
-	// printJSON(t, responseBody)
-
-	responseBodyStrings := responseBody.(map[string]interface{})
+	responseBodyStrings := getResponseBodyStrings(t, request)
 
 	assert.Nil(t, responseBodyStrings["ArduinoStatus"])
-
-	actualTime, errTimeParse := time.Parse("2006-01-02 15:04:05", now.Format("2006-01-02 ")+(responseBodyStrings["CreatedAt"].(string)))
-	if errTimeParse != nil {
-		t.Fatalf("%+v", errTimeParse)
-	}
-	// fmt.Printf("%d %d %s", now.Unix(), actualTime.Unix(), s.Text())
-	assert.LessOrEqual(t, now.Unix(), actualTime.Unix())
-
+	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
 	assert.Equal(t, "is-info", responseBodyStrings["PriorityName"])
 	assert.Equal(t, priorityNumber, responseBodyStrings["PriorityNumber"])
 
-	/*
-		doc, errHTMLDoc := goquery.NewDocumentFromReader(response.Body)
-		if errHTMLDoc != nil {
-			t.Fatalf("%+v", errors.WithStack(errHTMLDoc))
-		}
-
-		fmt.Print(doc.Html())
-
-		titleLinkSelection := doc.Find("header .card-header-title a")
-		assert.Equal(t, 1, titleLinkSelection.Length())
-
-		headerTagsSelection := doc.Find("header div.tags").Children()
-		assert.Equal(t, 3, headerTagsSelection.Length())
-
-		headerTagsSelection.Each(func(i int, s *goquery.Selection) {
-			if i == 0 {
-				assert.Equal(t, "Offen", s.Text())
-				assert.True(t, s.HasClass("is-info"))
-			}
-			if i == 1 {
-				actualTime, errTimeParse := time.Parse("2006-01-02 15:04:05", now.Format("2006-01-02 ")+(responseBodyStrings["CreatedAt"].(string)))
-				if errTimeParse != nil {
-					t.Fatalf("%+v", errTimeParse)
-				}
-			}
-			if i == 2 {
-				assert.True(t, s.HasClass("is-delete"))
-				assert.Equal(t, "/modality/"+modality+"/department/"+department+"/cancel", s.AttrOr("ic-post-to", ""))
-			}
-		})
-	*/
-
 	tearDownTest(t, server, db)
 }
 
-func TestIntegrationNotificationCreateShouldReturnHTMLForMediumPriority(t *testing.T) {
+func TestIntegrationNotificationCreateShouldReturnJSONForMediumPriority(t *testing.T) {
 
 	// given
 	server, db := setupTest(t)
@@ -114,39 +98,13 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForMediumPriority(t *testi
 	)
 
 	// when
-
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
-	client := &http.Client{}
-
-	response, err := client.Do(request)
-	if err != nil {
-		t.Fatalf("%+v", errors.WithStack(err))
-	}
-	defer response.Body.Close()
 
 	// then
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-
-	var responseBody interface{}
-	errJSONDecode := json.NewDecoder(response.Body).Decode(&responseBody)
-	if errJSONDecode != nil {
-		t.Fatalf("%+v", errJSONDecode)
-	}
-
-	// printJSON(t, responseBody)
-
-	responseBodyStrings := responseBody.(map[string]interface{})
+	responseBodyStrings := getResponseBodyStrings(t, request)
 
 	assert.Nil(t, responseBodyStrings["ArduinoStatus"])
-
-	actualTime, errTimeParse := time.Parse("2006-01-02 15:04:05", now.Format("2006-01-02 ")+(responseBodyStrings["CreatedAt"].(string)))
-	if errTimeParse != nil {
-		t.Fatalf("%+v", errTimeParse)
-	}
-	// fmt.Printf("%d %d %s", now.Unix(), actualTime.Unix(), s.Text())
-	assert.LessOrEqual(t, now.Unix(), actualTime.Unix())
-
+	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
@@ -156,7 +114,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForMediumPriority(t *testi
 	tearDownTest(t, server, db)
 }
 
-func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriority(t *testing.T) {
+func TestIntegrationNotificationCreateShouldReturnJSONForHighPriority(t *testing.T) {
 
 	// given
 	server, db := setupTest(t)
@@ -170,39 +128,13 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriority(t *testing
 	)
 
 	// when
-
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
-	client := &http.Client{}
-
-	response, err := client.Do(request)
-	if err != nil {
-		t.Fatalf("%+v", errors.WithStack(err))
-	}
-	defer response.Body.Close()
 
 	// then
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-
-	var responseBody interface{}
-	errJSONDecode := json.NewDecoder(response.Body).Decode(&responseBody)
-	if errJSONDecode != nil {
-		t.Fatalf("%+v", errJSONDecode)
-	}
-
-	// printJSON(t, responseBody)
-
-	responseBodyStrings := responseBody.(map[string]interface{})
+	responseBodyStrings := getResponseBodyStrings(t, request)
 
 	assert.Nil(t, responseBodyStrings["ArduinoStatus"])
-
-	actualTime, errTimeParse := time.Parse("2006-01-02 15:04:05", now.Format("2006-01-02 ")+(responseBodyStrings["CreatedAt"].(string)))
-	if errTimeParse != nil {
-		t.Fatalf("%+v", errTimeParse)
-	}
-	// fmt.Printf("%d %d %s", now.Unix(), actualTime.Unix(), s.Text())
-	assert.LessOrEqual(t, now.Unix(), actualTime.Unix())
-
+	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
@@ -212,7 +144,7 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriority(t *testing
 	tearDownTest(t, server, db)
 }
 
-func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriorityAndArduinoStatus(t *testing.T) {
+func TestIntegrationNotificationCreateShouldReturnJSONForHighPriorityAndArduinoStatus(t *testing.T) {
 
 	// given
 	server, db := setupTest(t)
@@ -236,42 +168,16 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriorityAndArduinoS
 	}
 
 	// when
-
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)
-	request.Header.Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
-	client := &http.Client{}
-
-	response, err := client.Do(request)
-	if err != nil {
-		t.Fatalf("%+v", errors.WithStack(err))
-	}
-	defer response.Body.Close()
 
 	// then
-	assert.Equal(t, http.StatusOK, response.StatusCode)
-
-	var responseBody interface{}
-	errJSONDecode := json.NewDecoder(response.Body).Decode(&responseBody)
-	if errJSONDecode != nil {
-		t.Fatalf("%+v", errJSONDecode)
-	}
-
-	// printJSON(t, responseBody)
-
-	responseBodyStrings := responseBody.(map[string]interface{})
+	responseBodyStrings := getResponseBodyStrings(t, request)
 
 	assert.NotNil(t, responseBodyStrings["ArduinoStatus"])
 	arduinoStatusStrings := responseBodyStrings["ArduinoStatus"].(map[string]interface{})
 	assert.Equal(t, department, arduinoStatusStrings["DepartmentID"])
 	assert.Equal(t, float64(arduinoStatus.StatusAt), arduinoStatusStrings["StatusAt"])
-
-	actualTime, errTimeParse := time.Parse("2006-01-02 15:04:05", now.Format("2006-01-02 ")+(responseBodyStrings["CreatedAt"].(string)))
-	if errTimeParse != nil {
-		t.Fatalf("%+v", errTimeParse)
-	}
-	// fmt.Printf("%d %d %s", now.Unix(), actualTime.Unix(), s.Text())
-	assert.LessOrEqual(t, now.Unix(), actualTime.Unix())
-
+	assertExpectedTimeIsLessThanActualTime(t, now, responseBodyStrings["CreatedAt"].(string))
 	assert.Equal(t, department, responseBodyStrings["Department"])
 	assert.Equal(t, modality, responseBodyStrings["Modality"])
 	assert.Equal(t, priority, responseBodyStrings["Priority"])
@@ -281,10 +187,11 @@ func TestIntegrationNotificationCreateShouldReturnHTMLForHighPriorityAndArduinoS
 	tearDownTest(t, server, db)
 }
 
-func printJSON(t *testing.T, data interface{}) {
-	s, errJSONPrint := json.MarshalIndent(data, "", "\t")
-	if errJSONPrint != nil {
-		t.Fatalf("%+v", errJSONPrint)
+func assertExpectedTimeIsLessThanActualTime(t *testing.T, expectedTime time.Time, actualTimeStr string) {
+	actualTime, errTimeParse := time.Parse("2006-01-02 15:04:05", expectedTime.Format("2006-01-02 ")+actualTimeStr)
+	if errTimeParse != nil {
+		t.Fatalf("%+v", errTimeParse)
 	}
-	fmt.Println(string(s))
+	// fmt.Printf("%d %d %s", now.Unix(), actualTime.Unix(), s.Text())
+	assert.LessOrEqual(t, expectedTime.Unix(), actualTime.Unix())
 }
