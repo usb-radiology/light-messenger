@@ -210,3 +210,7 @@ func writeInternalServerError(err error, w http.ResponseWriter) error {
 
 	return nil
 }
+
+func writeBadRequest(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusBadRequest)
+}

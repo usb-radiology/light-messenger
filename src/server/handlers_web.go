@@ -2,7 +2,6 @@ package server
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -42,7 +41,7 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 	vars := mux.Vars(r)
 	modality := vars["modality"]
 
-	processedNotifications, errNotificationGetByModality := lmdatabase.NotificationGetOpenNotificationsByModality(db, modality)
+	processedNotifications, errNotificationGetByModality := lmdatabase.NotificationGetProcessedNotificationsByModality(db, modality)
 	if writeInternalServerError(errNotificationGetByModality, w) != nil {
 		return errNotificationGetByModality
 	}
@@ -235,11 +234,14 @@ func notificationConfirmHandler(config *configuration.Configuration, db *sql.DB,
 
 	vars := mux.Vars(r)
 	notificationID := vars["id"]
-	fmt.Println(notificationID)
 
-	errNotificationConfirm := lmdatabase.NotificationConfirm(db, notificationID, time.Now().Unix())
+	rowsAffected, errNotificationConfirm := lmdatabase.NotificationConfirm(db, notificationID, time.Now().Unix())
 	if writeInternalServerError(errNotificationConfirm, w) != nil {
 		return errNotificationConfirm
+	}
+
+	if rowsAffected == 0 {
+		writeBadRequest(w)
 	}
 
 	return nil

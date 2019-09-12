@@ -75,7 +75,7 @@ func TestIntegrationVisierungShouldReturnJSONWithProcessedNotifications(t *testi
 		t.Fatalf("%+v", errors.WithStack(errNotificationGetByDepartmentAndModality))
 	}
 
-	errNotificationConfirm := lmdatabase.NotificationConfirm(db, notification.NotificationID, now.Unix())
+	_, errNotificationConfirm := lmdatabase.NotificationConfirm(db, notification.NotificationID, now.Unix())
 	if errNotificationConfirm != nil {
 		t.Fatalf("%+v", errors.WithStack(errNotificationConfirm))
 	}

@@ -71,6 +71,31 @@ func NotificationGetOpenNotificationByDepartmentAndModality(db *sql.DB, departme
 	return &result, nil
 }
 
+// NotificationGetByID ..
+func NotificationGetByID(db *sql.DB, notificationID string) (*Notification, error) {
+	queryStmt :=
+		`SELECT
+			notificationId, departmentId, modality, priority, createdAt, confirmedAt, cancelledAt
+		FROM
+			Notification
+		WHERE
+			notificationId = ?	
+		`
+
+	row := db.QueryRow(queryStmt, notificationID)
+
+	var result Notification
+	errRowScan := row.Scan(&result.NotificationID, &result.DepartmentID, &result.Modality, &result.Priority, &result.CreatedAt, &result.ConfirmedAt, &result.CancelledAt)
+
+	if errRowScan != nil {
+		if errRowScan == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errRowScan
+	}
+	return &result, nil
+}
+
 // NotificationGetOpenNotificationsByDepartment ..
 func NotificationGetOpenNotificationsByDepartment(db *sql.DB, department string) (*[]Notification, error) {
 	queryStmt :=
@@ -106,8 +131,8 @@ func NotificationGetOpenNotificationsByDepartment(db *sql.DB, department string)
 	return &openNotifications, nil
 }
 
-// NotificationGetOpenNotificationsByModality ..
-func NotificationGetOpenNotificationsByModality(db *sql.DB, modality string) (*[]Notification, error) {
+// NotificationGetProcessedNotificationsByModality ..
+func NotificationGetProcessedNotificationsByModality(db *sql.DB, modality string) (*[]Notification, error) {
 	queryStmt :=
 		`SELECT
 			notificationId, modality, departmentId, priority, createdAt, confirmedAt, cancelledAt
@@ -197,7 +222,7 @@ func NotificationUpdatePriority(db *sql.DB, notificationID string, priority int)
 }
 
 // NotificationConfirm ..
-func NotificationConfirm(db *sql.DB, notificationID string, now int64) error {
+func NotificationConfirm(db *sql.DB, notificationID string, now int64) (int64, error) {
 	updateStmt, err := db.Prepare(`
 	UPDATE
 		Notification
@@ -207,15 +232,20 @@ func NotificationConfirm(db *sql.DB, notificationID string, now int64) error {
 		notificationId = ?`)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	defer updateStmt.Close()
 
-	_, errExec := updateStmt.Exec(now, notificationID)
+	result, errExec := updateStmt.Exec(now, notificationID)
 	if errExec != nil {
-		return errExec
+		return 0, errExec
 	}
 
-	return nil
+	rowsAffected, errRowsAffected := result.RowsAffected()
+	if errRowsAffected != nil {
+		return 0, errRowsAffected
+	}
+
+	return rowsAffected, nil
 }

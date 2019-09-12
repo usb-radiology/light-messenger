@@ -26,7 +26,7 @@ func TestIntegrationShouldInsertAndGetNotification(t *testing.T) {
 	}
 
 	// then
-	result, errQuery := NotificationGetByDepartmentAndModality(db, departmentID, modality)
+	result, errQuery := NotificationGetOpenNotificationByDepartmentAndModality(db, departmentID, modality)
 	if errQuery != nil {
 		t.Fatalf("%+v", errors.WithStack(errQuery))
 	}
