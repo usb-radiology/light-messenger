@@ -18,8 +18,9 @@ all: build
 embed: 
 	rm -f src/server/rice-box.go
 	rice embed-go -v -i github.com/usb-radiology/light-messenger/src/server
-build: embed
+build:
 	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
+	rice append -i github.com/usb-radiology/light-messenger/src/server --exec $(BINARY_NAME)
 clean: 
 	rm -f src/server/rice-box.go
 	$(GOCLEAN)
@@ -29,7 +30,7 @@ test: embed
 	$(GOTEST) -v ./...
 test-unit: embed
 	$(GOTEST) -v -run Unit ./...
-test-integration:  embed
+test-integration: embed
 	$(GOTEST) -v -run Integration ./...
 test-coverage: clean embed
 	$(GOTEST) -coverprofile=coverage.out ./...

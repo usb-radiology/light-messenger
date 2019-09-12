@@ -82,7 +82,7 @@ To setup auto recompile on code change, use the provided `run-dev.sh` script. No
 To create a production release which is a self contained binary, run the following:
 
 ```bash
-TODO:
+./release.sh
 ```
 
 ### Code
@@ -94,7 +94,35 @@ TODO:
 Systemd setup:
 
 ```systemd
-TODO:
+[Unit]
+Description=Light Messenger
+After=syslog.target
+After=network.target
+After=mysql.service
+
+[Service]
+#LimitMEMLOCK=infinity
+#LimitNOFILE=65535
+Type=simple
+User=nofasy
+Group=nofasy
+WorkingDirectory=/home/nofasy/light-messenger-dist
+ExecStart=/home/nofasy/light-messenger/light-messenger.exec
+Restart=always
+RestartSec=10
+#StandardOutput=file:/var/log/radiology-monitor.out
+#StandardError=file:/var/log/radiology-montitor.err
+Environment="USER=nofasy" "HOME=/home/nofasy" 
+Environment="GOPATH=/home/nofasy/.gvm/pkgsets/go1.12.1/global" "GOROOT=/home/nofasy/.gvm/gos/go1.12.1" "GVM_ROOT=/home/nofasy/.gvm" 
+Environment="PATH=/home/nofasy/.nvm/versions/node/v10.15.3/bin:/home/nofasy/.gvm/pkgsets/go1.12.1/global/bin:/home/nofasy/.gvm/gos/go1.12.1/bin:/home/nofasy/.gvm/pkgsets/go1.12.1/global/overlay/bin:/home/nofasy/.gvm/bin:/home/nofasy/.gvm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl enable light-messenger
+sudo service light-messenger start
 ```
 
 Logging:
