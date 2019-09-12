@@ -30,23 +30,43 @@ tag_arg=$1
 
 if [[ $tag_arg ]]
 then
+  print_command_header "push changes"
+  git push origin
+  check_command_success "push"
+  
   tag=$tag_arg
   print_command_header "tagging $tag"
   git tag $tag
   check_command_success "creating git tag"
+  
+  print_command_header "pushing git tag"
   git push origin $tag
   check_command_success "pushing git tag"
+  
+  print_command_header "run tests"
   make test
   check_command_success "tests"
+  
+  print_command_header "build"
   make build
   check_command_success "build"
+  
+  print_command_header "stop service"
   ssh nofasy@radmon 'sudo systemctl stop light-messenger'
   check_command_success "stop current service"
+  
+  print_command_header "copy binary"
   scp ./light-messenger.exec nofasy@radmon:~/light-messenger-dist/
   check_command_success "scp"
+  
+  print_command_header "start service"
   ssh nofasy@radmon 'sudo systemctl start light-messenger'
   check_command_success "start service"
+  
+  print_command_header "status service"
   ssh nofasy@radmon 'sudo systemctl status light-messenger'
+  check_command_success "status service"
+  
 else
   printf "require tag name\n"
 fi
