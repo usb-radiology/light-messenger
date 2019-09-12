@@ -1,20 +1,17 @@
 # Light-Messenger
 
-
 ## Why
-The Light-Messenger helps MTRAs to communicate with radiologist without calling
-them on the phone. If a case is urgent and the radiologist on duty needs to
-schedule the right sequence the MTRAs are calling via phone. This is quick and
-well established however it has the downside of interrupting the radiologist on duty,
-because most of the time is doing case reading and all the collegues around.
-Instead of calling the radiologist the MTRAs can send a ambient light signal to
-the department which is not disturbing and has less effect of interruption.
+
+Light-Messenger helps MTRAs communicate with radiologists without calling
+them on the phone. Normally, urgent cases require that the MTRA calls up the Radiologist on the phone. While this communication is
+well established, it has the downside of interrupting the radiologist on duty along with disturbing the other people reading images in the same room. Instead of calling the radiologist the MTRAs can send a ambient light signal to the radiology
+the department has a lower interruption cost.
 
 ## How
-Light-Messenger is a web application with the Arduino code to provide the full
-setup of the solution described above. The MTRAs use a ui which allows them to
-create notifications with three different priorities. On the other side, the
-radiologists are presented with a list of open notifications regarding cases
+
+Light-Messenger is a web application that provides the solution described above. The MTRAs use a ui which allows them to
+create notifications with three different priorities. On the Radiology side, the
+doctors are presented with a list of open notifications regarding urgent cases
 that need to be acknowledged.
 
 This application also supports an arduino that can hook into the application
@@ -22,12 +19,14 @@ via a REST API and flash an LED in case there is a notification open so that
 the Radiologist can acknowledge the notification.
 
 This is a screenshot of how it looks on the MTRAs side
+
 ![Alt text](mtra.png?raw=true "MTRA screen")
 
-
 This is a screenshot of how it looks for the radiologist department
+
 ![Alt text](department.png?raw=true "MTRA screen")
 
+TODO: image of the LED flashing in the Befund room :)
 
 ## Development
 
@@ -57,7 +56,7 @@ Git repository structure:
 - `README.md`: this document
 - `run-dev.sh`: development script to rebuild application on code change
 
-### setup
+### Setup
 
 Steps:
 
@@ -86,7 +85,11 @@ To create a production release which is a self contained binary, run the followi
 TODO:
 ```
 
-## production
+### Code
+
+- Note that error stacktraces need to be enabled _at the point of library interaction_ in the code. As an example, an error that occurs while communicating with the db needs to be wrapped with `errors.WithStack()` but this error can simply be passed along when used in the handler. The idea is to enable clean stacktraces and avoid Java-esque stacktrace recursion.
+
+## Production
 
 Systemd setup:
 
