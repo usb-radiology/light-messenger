@@ -70,7 +70,7 @@ func TestIntegrationVisierungShouldReturnJSONWithProcessedNotifications(t *testi
 		t.Fatalf("%+v", errors.WithStack(errNotificationCancel))
 	}
 
-	notification, errNotificationGetByDepartmentAndModality := lmdatabase.NotificationGetByDepartmentAndModality(db, "ctd", modality)
+	notification, errNotificationGetByDepartmentAndModality := lmdatabase.NotificationGetOpenNotificationByDepartmentAndModality(db, "ctd", modality)
 	if errNotificationGetByDepartmentAndModality != nil {
 		t.Fatalf("%+v", errors.WithStack(errNotificationGetByDepartmentAndModality))
 	}

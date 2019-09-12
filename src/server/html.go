@@ -16,7 +16,7 @@ func getCardHTML(db *sql.DB, modality string, department string) (string, error)
 		return "", errStatusQuery
 	}
 
-	notification, errNotificationGetByDepartmentAndModality := lmdatabase.NotificationGetByDepartmentAndModality(db, department, modality)
+	notification, errNotificationGetByDepartmentAndModality := lmdatabase.NotificationGetOpenNotificationByDepartmentAndModality(db, department, modality)
 	if errNotificationGetByDepartmentAndModality != nil {
 		return "", errNotificationGetByDepartmentAndModality
 	}
@@ -40,7 +40,7 @@ func getCardHTML(db *sql.DB, modality string, department string) (string, error)
 }
 
 func getNotificationsHTML(db *sql.DB, department string) (string, error) {
-	notifications, errNotificationGetByDepartment := lmdatabase.NotificationGetByDepartment(db, department)
+	notifications, errNotificationGetByDepartment := lmdatabase.NotificationGetOpenNotificationsByDepartment(db, department)
 	if errNotificationGetByDepartment != nil {
 		return "", errNotificationGetByDepartment
 	}

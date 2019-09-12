@@ -163,6 +163,45 @@ func assertNotificationHTMLMediumPriority(t *testing.T, doc *goquery.Document, m
 		}
 	})
 
+	assertNotificationHTMLArdunioStatusNoSignal(t, doc)
+}
+
+func assertNotificationHTMLNoPriority(t *testing.T, doc *goquery.Document, modality string, department string) {
+
+	titleLinkSelection := doc.Find("header .card-header-title a")
+	assert.Equal(t, 1, titleLinkSelection.Length())
+
+	headerTagsSelection := doc.Find("header div.tags").Children()
+	assert.Equal(t, 0, headerTagsSelection.Length())
+
+	priorityButtonsSelection := doc.Find("div.card-content a.button")
+	assert.Equal(t, 3, priorityButtonsSelection.Length())
+
+	priorityButtonsSelection.Each(func(i int, s *goquery.Selection) {
+		_, existsDisabledAttr := s.Attr("disabled")
+		_, existsIcPostToAttr := s.Attr("ic-post-to")
+
+		if i == 0 {
+			assert.True(t, s.HasClass("is-info"))
+			assert.False(t, existsDisabledAttr)
+			assert.True(t, existsIcPostToAttr)
+		}
+		if i == 1 {
+			assert.True(t, s.HasClass("is-warning"))
+			assert.False(t, existsDisabledAttr)
+			assert.True(t, existsIcPostToAttr)
+		}
+		if i == 2 {
+			assert.True(t, s.HasClass("is-danger"))
+			assert.False(t, existsDisabledAttr)
+			assert.True(t, existsIcPostToAttr)
+		}
+	})
+
+	assertNotificationHTMLArdunioStatusNoSignal(t, doc)
+}
+
+func assertNotificationHTMLArdunioStatusNoSignal(t *testing.T, doc *goquery.Document) {
 	cardFooterItemsSelection := doc.Find("div.card-footer-item div.column")
 	assert.Equal(t, 2, cardFooterItemsSelection.Length())
 

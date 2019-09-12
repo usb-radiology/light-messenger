@@ -45,7 +45,7 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 	vars := mux.Vars(r)
 	department := vars["department"]
 
-	notifications, err := lmdatabase.NotificationGetByDepartment(db, department)
+	notifications, err := lmdatabase.NotificationGetOpenNotificationsByDepartment(db, department)
 	if writeInternalServerError(err, w) != nil {
 		return err
 	}

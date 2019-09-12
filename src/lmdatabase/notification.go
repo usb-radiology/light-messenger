@@ -38,8 +38,8 @@ func NotificationInsert(db *sql.DB, department string, priority int, modality st
 	return nil
 }
 
-// NotificationGetByDepartmentAndModality ..
-func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modality string) (*Notification, error) {
+// NotificationGetOpenNotificationByDepartmentAndModality ..
+func NotificationGetOpenNotificationByDepartmentAndModality(db *sql.DB, department string, modality string) (*Notification, error) {
 	queryStmt :=
 		`SELECT
 			notificationId, departmentId, modality, priority, createdAt
@@ -71,8 +71,8 @@ func NotificationGetByDepartmentAndModality(db *sql.DB, department string, modal
 	return &result, nil
 }
 
-// NotificationGetByDepartment ..
-func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification, error) {
+// NotificationGetOpenNotificationsByDepartment ..
+func NotificationGetOpenNotificationsByDepartment(db *sql.DB, department string) (*[]Notification, error) {
 	queryStmt :=
 		`SELECT
 			notificationId, modality, departmentId, priority, createdAt
@@ -94,7 +94,6 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 		return &openNotifications, errQuery
 	}
 	defer rows.Close()
-	
 
 	for rows.Next() {
 		var notification Notification
@@ -107,8 +106,8 @@ func NotificationGetByDepartment(db *sql.DB, department string) (*[]Notification
 	return &openNotifications, nil
 }
 
-// NotificationGetByModality ..
-func NotificationGetByModality(db *sql.DB, modality string) (*[]Notification, error) {
+// NotificationGetOpenNotificationsByModality ..
+func NotificationGetOpenNotificationsByModality(db *sql.DB, modality string) (*[]Notification, error) {
 	queryStmt :=
 		`SELECT
 			notificationId, modality, departmentId, priority, createdAt, confirmedAt, cancelledAt
