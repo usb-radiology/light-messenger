@@ -21,6 +21,10 @@ check_command_success () {
   fi
 }
 
+if [[ $(git diff --stat) != '' ]]; then
+  echo "modified / untracked files\n\n"
+  exit 1
+fi
 
 tag_arg=$1
 
