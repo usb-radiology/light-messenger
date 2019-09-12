@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
@@ -24,15 +25,15 @@ func arduinoStatusHandler(config *configuration.Configuration, db *sql.DB, w htt
 
 	{
 		errInsert := lmdatabase.ArduinoStatusInsert(db, status)
-		if writeInternalServerError(errInsert, w) != nil {
+		if errInsert != nil {
 			return errInsert
 		}
 	}
 
 	{
 		errWrite := writeBytes(w, []byte(fmt.Sprintf("%+v", status)))
-		if writeInternalServerError(errWrite, w) != nil {
-			return errWrite
+		if errWrite != nil {
+			return errors.WithStack(errWrite)
 		}
 	}
 
@@ -46,7 +47,7 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 	department := vars["department"]
 
 	notifications, err := lmdatabase.NotificationGetOpenNotificationsByDepartment(db, department)
-	if writeInternalServerError(err, w) != nil {
+	if err != nil {
 		return err
 	}
 
@@ -59,8 +60,8 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 
 		{
 			errWrite := writeBytes(w, []byte(fmt.Sprintf(";1;%v;", arduinoPrioMap[(*notifications)[0].Priority])))
-			if writeInternalServerError(errWrite, w) != nil {
-				return errWrite
+			if errWrite != nil {
+				return errors.WithStack(errWrite)
 			}
 		}
 
@@ -68,8 +69,8 @@ func openStatusHandler(config *configuration.Configuration, db *sql.DB, w http.R
 
 		{
 			errWrite := writeBytes(w, []byte(fmt.Sprintf(";0;")))
-			if writeInternalServerError(errWrite, w) != nil {
-				return errWrite
+			if errWrite != nil {
+				return errors.WithStack(errWrite)
 			}
 		}
 	}

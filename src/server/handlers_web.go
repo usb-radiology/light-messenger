@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 	"github.com/usb-radiology/light-messenger/src/version"
@@ -24,12 +25,7 @@ func mainHandler(config *configuration.Configuration, db *sql.DB, w http.Respons
 		"BuildTime": version.BuildTime,
 	}
 
-	errRenderTemplate := renderTemplate(w, r, templates[templateIndexID], data)
-	if writeInternalServerError(errRenderTemplate, w) != nil {
-		return errRenderTemplate
-	}
-
-	return nil
+	return renderTemplate(w, r, templates[templateIndexID], data)
 }
 
 //
@@ -42,32 +38,32 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 	modality := vars["modality"]
 
 	processedNotifications, errNotificationGetByModality := lmdatabase.NotificationGetProcessedNotificationsByModality(db, modality)
-	if writeInternalServerError(errNotificationGetByModality, w) != nil {
+	if errNotificationGetByModality != nil {
 		return errNotificationGetByModality
 	}
 
 	aodCardHTML, errAodCardHTML := getCardHTML(db, modality, "aod")
-	if writeInternalServerError(errAodCardHTML, w) != nil {
+	if errAodCardHTML != nil {
 		return errAodCardHTML
 	}
 
 	ctdCardHTML, errCtdCardHTML := getCardHTML(db, modality, "ctd")
-	if writeInternalServerError(errCtdCardHTML, w) != nil {
+	if errCtdCardHTML != nil {
 		return errCtdCardHTML
 	}
 
 	mskCardHTML, errMskCardHTML := getCardHTML(db, modality, "msk")
-	if writeInternalServerError(errMskCardHTML, w) != nil {
+	if errMskCardHTML != nil {
 		return errMskCardHTML
 	}
 
 	nrCardHTML, errNrCardHTML := getCardHTML(db, modality, "nr")
-	if writeInternalServerError(errNrCardHTML, w) != nil {
+	if errNrCardHTML != nil {
 		return errNrCardHTML
 	}
 
 	nukCardHTML, errNukCardHTML := getCardHTML(db, modality, "nuk")
-	if writeInternalServerError(errNukCardHTML, w) != nil {
+	if errNukCardHTML != nil {
 		return errNukCardHTML
 	}
 
@@ -87,12 +83,7 @@ func visierungHandler(config *configuration.Configuration, db *sql.DB, w http.Re
 		return writeJSON(w, data)
 	}
 
-	errRenderTemplate := renderTemplate(w, r, templates[templateVisierungID], data)
-	if writeInternalServerError(errRenderTemplate, w) != nil {
-		return errRenderTemplate
-	}
-
-	return nil
+	return renderTemplate(w, r, templates[templateVisierungID], data)
 }
 
 //
@@ -105,12 +96,12 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 	department := vars["department"]
 
 	arduinoStatus, errStatusQuery := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, time.Now().Unix())
-	if writeInternalServerError(errStatusQuery, w) != nil {
+	if errStatusQuery != nil {
 		return errStatusQuery
 	}
 
 	notificationsHTML, errNotificationsHTML := getNotificationsHTML(db, department)
-	if writeInternalServerError(errNotificationsHTML, w) != nil {
+	if errNotificationsHTML != nil {
 		return errNotificationsHTML
 	}
 
@@ -126,12 +117,7 @@ func radiologieHandler(config *configuration.Configuration, db *sql.DB, w http.R
 		return writeJSON(w, data)
 	}
 
-	errRenderTemplate := renderTemplate(w, r, templates[templateRadiologieID], data)
-	if writeInternalServerError(errRenderTemplate, w) != nil {
-		return errRenderTemplate
-	}
-
-	return nil
+	return renderTemplate(w, r, templates[templateRadiologieID], data)
 }
 
 //
@@ -147,12 +133,12 @@ func notificationCreateHandler(config *configuration.Configuration, db *sql.DB, 
 	log.Print("priorityHandler ", modality, ", ", department, ", ", priority)
 
 	priorityNumber, errPriorityConversion := strconv.Atoi(priority)
-	if writeInternalServerError(errPriorityConversion, w) != nil {
-		return errPriorityConversion
+	if errPriorityConversion != nil {
+		return errors.WithStack(errPriorityConversion)
 	}
 
 	notification, errNotificationGetByDepartmentAndModality := lmdatabase.NotificationGetOpenNotificationByDepartmentAndModality(db, department, modality)
-	if writeInternalServerError(errNotificationGetByDepartmentAndModality, w) != nil {
+	if errNotificationGetByDepartmentAndModality != nil {
 		return errNotificationGetByDepartmentAndModality
 	}
 
@@ -160,21 +146,21 @@ func notificationCreateHandler(config *configuration.Configuration, db *sql.DB, 
 
 	if notification.NotificationID == "" {
 		errNotificationInsert := lmdatabase.NotificationInsert(db, department, priorityNumber, modality, now)
-		if writeInternalServerError(errNotificationInsert, w) != nil {
+		if errNotificationInsert != nil {
 			return errNotificationInsert
 		}
 
 	} else {
 
 		errNotificationUpdatePriority := lmdatabase.NotificationUpdatePriority(db, notification.NotificationID, priorityNumber)
-		if writeInternalServerError(errNotificationUpdatePriority, w) != nil {
+		if errNotificationUpdatePriority != nil {
 			return errNotificationUpdatePriority
 		}
 
 	}
 
 	arduinoStatus, errStatusQuery := lmdatabase.ArduinoStatusQueryWithin5MinutesFromNow(db, department, now)
-	if writeInternalServerError(errStatusQuery, w) != nil {
+	if errStatusQuery != nil {
 		return errStatusQuery
 	}
 
@@ -192,12 +178,7 @@ func notificationCreateHandler(config *configuration.Configuration, db *sql.DB, 
 		return writeJSON(w, data)
 	}
 
-	errRenderTemplateName := renderTemplateName(w, r, templates[templateCardID], "card_view", data)
-	if writeInternalServerError(errRenderTemplateName, w) != nil {
-		return errRenderTemplateName
-	}
-
-	return nil
+	return renderTemplateName(w, r, templates[templateCardID], "card_view", data)
 }
 
 func notificationCancelHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
@@ -213,7 +194,7 @@ func notificationCancelHandler(config *configuration.Configuration, db *sql.DB, 
 	}
 
 	errNotificationCancel := lmdatabase.NotificationCancel(db, modality, department, time.Now().Unix())
-	if writeInternalServerError(errNotificationCancel, w) != nil {
+	if errNotificationCancel != nil {
 		return errNotificationCancel
 	}
 
@@ -221,12 +202,7 @@ func notificationCancelHandler(config *configuration.Configuration, db *sql.DB, 
 		return writeJSON(w, data)
 	}
 
-	errRenderTemplateName := renderTemplateName(w, r, templates[templateCardID], "card_view", data)
-	if writeInternalServerError(errRenderTemplateName, w) != nil {
-		return errRenderTemplateName
-	}
-
-	return nil
+	return renderTemplateName(w, r, templates[templateCardID], "card_view", data)
 }
 
 func notificationConfirmHandler(config *configuration.Configuration, db *sql.DB, w http.ResponseWriter, r *http.Request) error {
@@ -236,7 +212,7 @@ func notificationConfirmHandler(config *configuration.Configuration, db *sql.DB,
 	notificationID := vars["id"]
 
 	rowsAffected, errNotificationConfirm := lmdatabase.NotificationConfirm(db, notificationID, time.Now().Unix())
-	if writeInternalServerError(errNotificationConfirm, w) != nil {
+	if errNotificationConfirm != nil {
 		return errNotificationConfirm
 	}
 

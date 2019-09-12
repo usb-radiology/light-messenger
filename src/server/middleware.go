@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 
 	"github.com/usb-radiology/light-messenger/src/configuration"
@@ -16,8 +17,9 @@ type handler struct {
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := h.routeHandler(h.initConfig, h.db, w, r)
 	if err != nil {
+		log.Printf("%+v", err)
+
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
-
 	}
 }

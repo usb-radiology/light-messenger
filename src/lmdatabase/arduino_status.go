@@ -1,6 +1,10 @@
 package lmdatabase
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/pkg/errors"
+)
 
 // ArduinoStatus ..
 type ArduinoStatus struct {
@@ -19,14 +23,14 @@ func ArduinoStatusInsert(db *sql.DB, status ArduinoStatus) error {
 	statusAt =?`)
 
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	//defer insertStmt.Close()
 
 	_, errExec := insertStmt.Exec(status.DepartmentID, status.StatusAt, status.StatusAt)
 	if errExec != nil {
-		return errExec
+		return errors.WithStack(errExec)
 	}
 
 	return nil
@@ -54,7 +58,7 @@ func ArduinoStatusQueryWithin5MinutesFromNow(db *sql.DB, department string, now 
 		if errRowScan == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, errRowScan
+		return nil, errors.WithStack(errRowScan)
 	}
 	return &result, nil
 }

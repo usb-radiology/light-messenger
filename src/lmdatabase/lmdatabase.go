@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver ..
+	"github.com/pkg/errors"
 	"github.com/usb-radiology/light-messenger/src/configuration"
 )
 
@@ -16,7 +17,7 @@ func GetDB(initConfig *configuration.Configuration) (*sql.DB, error) {
 	conn := initConfig.Database.Username + ":" + initConfig.Database.Password + "@tcp(" + initConfig.Database.Host + ":" + strconv.Itoa(initConfig.Database.Port) + ")/" + initConfig.Database.DBName
 	db, err := sql.Open("mysql", conn)
 	if err != nil {
-		log.Fatal("Error opening database connection", err)
+		log.Fatalf("%+v", errors.WithStack(err))
 	}
 	return db, nil
 }
@@ -27,7 +28,7 @@ func ReadStatementsFromSQL(sqlFilePath string) (*[]string, error) {
 
 	fileContents, errFileRead := ioutil.ReadFile(sqlFilePath)
 	if errFileRead != nil {
-		return nil, errFileRead
+		return nil, errors.WithStack(errFileRead)
 	}
 
 	strStatements := strings.Split(string(fileContents), ";\n")
@@ -48,7 +49,7 @@ func ExecStatements(db *sql.DB, sqlStatements []string) (*[]sql.Result, error) {
 			execResult, err := db.Exec(trimedStatement)
 			if err != nil {
 				// if err.Error() != "Error 1065: Query was empty" { // skip empty line errors (or alternatively skip empty line statements)
-				return nil, err
+				return nil, errors.WithStack(err)
 				// }
 			}
 			results = append(results, execResult)
@@ -69,7 +70,7 @@ func ExecStatement(db *sql.DB, statement string) (sql.Result, error) {
 		execResult, err := db.Exec(trimedStatement)
 		if err != nil {
 			// if err.Error() != "Error 1065: Query was empty" { // skip empty line errors (or alternatively skip empty line statements)
-			return nil, err
+			return nil, errors.WithStack(err)
 			// }
 		}
 		return execResult, nil

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 // Notification ..
@@ -26,14 +27,14 @@ func NotificationInsert(db *sql.DB, department string, priority int, modality st
 	VALUES( ?, ? , ?, ?, ?) `)
 
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	defer insertStmt.Close()
 
 	_, errExec := insertStmt.Exec(uuid.New().String(), department, priority, modality, createdAt)
 	if errExec != nil {
-		return errExec
+		return errors.WithStack(errExec)
 	}
 	return nil
 }
@@ -66,7 +67,7 @@ func NotificationGetOpenNotificationByDepartmentAndModality(db *sql.DB, departme
 			return &result, nil
 		}
 
-		return &result, errRowScan
+		return &result, errors.WithStack(errRowScan)
 	}
 	return &result, nil
 }
@@ -91,7 +92,7 @@ func NotificationGetByID(db *sql.DB, notificationID string) (*Notification, erro
 		if errRowScan == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, errRowScan
+		return nil, errors.WithStack(errRowScan)
 	}
 	return &result, nil
 }
@@ -114,16 +115,17 @@ func NotificationGetOpenNotificationsByDepartment(db *sql.DB, department string)
 		ASC`
 
 	rows, errQuery := db.Query(queryStmt, department)
-	openNotifications := make([]Notification, 0)
 	if errQuery != nil {
-		return &openNotifications, errQuery
+		return nil, errors.WithStack(errQuery)
 	}
 	defer rows.Close()
+
+	openNotifications := make([]Notification, 0)
 
 	for rows.Next() {
 		var notification Notification
 		if errRowScan := rows.Scan(&notification.NotificationID, &notification.Modality, &notification.DepartmentID, &notification.Priority, &notification.CreatedAt); errRowScan != nil {
-			return nil, errRowScan
+			return nil, errors.WithStack(errRowScan)
 		}
 		openNotifications = append(openNotifications, notification)
 	}
@@ -148,10 +150,10 @@ func NotificationGetProcessedNotificationsByModality(db *sql.DB, modality string
 
 	rows, errQuery := db.Query(queryStmt, modality)
 	if errQuery != nil {
-		log.Fatal(errQuery)
-		return nil, errQuery
+		return nil, errors.WithStack(errQuery)
 	}
 	defer rows.Close()
+
 	processedNotifications := make([]Notification, 0)
 
 	for rows.Next() {
@@ -160,7 +162,7 @@ func NotificationGetProcessedNotificationsByModality(db *sql.DB, modality string
 			&notification.DepartmentID, &notification.Priority, &notification.CreatedAt,
 			&notification.ConfirmedAt, &notification.CancelledAt); errRowScan != nil {
 			log.Printf("%+v, %+v", notification, processedNotifications)
-			return nil, errRowScan
+			return nil, errors.WithStack(errRowScan)
 		}
 		processedNotifications = append(processedNotifications, notification)
 	}
@@ -192,7 +194,7 @@ func NotificationCancel(db *sql.DB, modality string, department string, cancelle
 
 	_, errExec := updateStmt.Exec(cancelledAt, modality, department)
 	if errExec != nil {
-		return errExec
+		return errors.WithStack(errExec)
 	}
 
 	return nil
@@ -209,13 +211,13 @@ func NotificationUpdatePriority(db *sql.DB, notificationID string, priority int)
 		notificationId = ?`)
 
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer updateStmt.Close()
 
 	_, errExec := updateStmt.Exec(priority, notificationID)
 	if errExec != nil {
-		return errExec
+		return errors.WithStack(errExec)
 	}
 
 	return nil
@@ -239,12 +241,12 @@ func NotificationConfirm(db *sql.DB, notificationID string, now int64) (int64, e
 
 	result, errExec := updateStmt.Exec(now, notificationID)
 	if errExec != nil {
-		return 0, errExec
+		return 0, errors.WithStack(errExec)
 	}
 
 	rowsAffected, errRowsAffected := result.RowsAffected()
 	if errRowsAffected != nil {
-		return 0, errRowsAffected
+		return 0, errors.WithStack(errRowsAffected)
 	}
 
 	return rowsAffected, nil

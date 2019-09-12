@@ -68,7 +68,6 @@ func getRouter(initConfig *configuration.Configuration, db *sql.DB) *mux.Router 
 	errCompileTemplates := compileTemplates()
 	if errCompileTemplates != nil {
 		log.Fatalf("%+v", errCompileTemplates)
-		return nil
 	}
 
 	r := mux.NewRouter()
@@ -159,12 +158,12 @@ func renderTemplateName(w http.ResponseWriter, r *http.Request, tpl *template.Te
 	buf := new(bytes.Buffer)
 	err := tpl.ExecuteTemplate(buf, name, data)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	errWrite := writeBytes(w, buf.Bytes())
 	if errWrite != nil {
-		return errWrite
+		return errors.WithStack(errWrite)
 	}
 
 	return nil
@@ -174,8 +173,8 @@ func renderTemplate(w http.ResponseWriter, r *http.Request, tpl *template.Templa
 	w.Header().Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueHTML)
 
 	err := tpl.Execute(w, data)
-	if writeInternalServerError(err, w) != nil {
-		return err
+	if err != nil {
+		return errors.WithStack(err)
 	}
 	return nil
 }
@@ -183,7 +182,7 @@ func renderTemplate(w http.ResponseWriter, r *http.Request, tpl *template.Templa
 func writeBytes(w http.ResponseWriter, bytes []byte) error {
 	_, errWrite := w.Write(bytes)
 	if errWrite != nil {
-		return errWrite
+		return errors.WithStack(errWrite)
 	}
 
 	return nil
@@ -193,19 +192,13 @@ func writeJSON(w http.ResponseWriter, data map[string]interface{}) error {
 	w.Header().Set(HTMLHeaderContentType, HTMLHeaderContentTypeValueJSON)
 
 	jsonString, errJSONMarshal := json.Marshal(data)
-	if writeInternalServerError(errJSONMarshal, w) != nil {
-		return errJSONMarshal
+	if errJSONMarshal != nil {
+		return errors.WithStack(errJSONMarshal)
 	}
-	return writeBytes(w, jsonString)
 
-}
-
-func writeInternalServerError(err error, w http.ResponseWriter) error {
-	if err != nil {
-		// we don't necessarily want to kill the application on 500
-		log.Printf("%+v", errors.WithStack(err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return err
+	errWriteBytes := writeBytes(w, jsonString)
+	if errWriteBytes != nil {
+		return errors.WithStack(errWriteBytes)
 	}
 
 	return nil
