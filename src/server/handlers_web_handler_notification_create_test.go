@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
 
 func TestIntegrationNotificationCreateShouldReturnJSONForLowPriority(t *testing.T) {
@@ -112,15 +111,7 @@ func TestIntegrationNotificationCreateShouldReturnJSONForHighPriorityAndArduinoS
 		now                    = time.Now()
 	)
 
-	arduinoStatus := lmdatabase.ArduinoStatus{
-		DepartmentID: department,
-		StatusAt:     now.Unix() - 1,
-	}
-
-	errArduinoStatusInsert := lmdatabase.ArduinoStatusInsert(db, arduinoStatus)
-	if errArduinoStatusInsert != nil {
-		t.Fatalf("%+v", errArduinoStatusInsert)
-	}
+	arduinoStatus := testArduinoStatusInsert(t, db, department, now.Unix()-1)
 
 	// when
 	request, _ := http.NewRequest("GET", server.URL+"/modality/"+modality+"/department/"+department+"/prio/"+priority, nil)

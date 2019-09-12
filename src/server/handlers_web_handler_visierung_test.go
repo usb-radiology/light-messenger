@@ -1,8 +1,6 @@
 package server
 
 import (
-	"database/sql"
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -59,6 +57,7 @@ func TestIntegrationVisierungShouldReturnJSONWithProcessedNotifications(t *testi
 		modality    = "x"
 		priorityInt = 2
 		now         = time.Now()
+		cancelledAt = now.Unix() - 2
 		// priority               = "3"
 		// priorityNumber float64 = 3
 	)
@@ -66,7 +65,7 @@ func TestIntegrationVisierungShouldReturnJSONWithProcessedNotifications(t *testi
 	testNotificationInsert(t, db, "aod", priorityInt, modality, now.Unix()-1000) // cancelled
 	testNotificationInsert(t, db, "ctd", priorityInt, modality, now.Unix()-500)  // confirmed
 
-	errNotificationCancel := lmdatabase.NotificationCancel(db, modality, "aod", now.Unix()-2)
+	errNotificationCancel := lmdatabase.NotificationCancel(db, modality, "aod", cancelledAt)
 	if errNotificationCancel != nil {
 		t.Fatalf("%+v", errors.WithStack(errNotificationCancel))
 	}
@@ -88,20 +87,30 @@ func TestIntegrationVisierungShouldReturnJSONWithProcessedNotifications(t *testi
 	responseBodyStrings := getResponseBodyStrings(t, request)
 	processedNotifications := responseBodyStrings["ProcessedNotifications"].([]interface{})
 
-	fmt.Printf("%+v", processedNotifications)
+	// fmt.Printf("%+v", processedNotifications)
 	assert.NotEmpty(t, processedNotifications)
 
-	var processedNotification map[string]interface{}
+	{
+		var ctdNotification map[string]interface{}
+		ctdNotification = processedNotifications[0].(map[string]interface{})
+		assert.Equal(t, "ctd", ctdNotification["DepartmentID"].(string))
+		assert.Equal(t, modality, ctdNotification["Modality"].(string))
+		assert.Equal(t, float64(priorityInt), ctdNotification["Priority"].(float64))
+		assert.Equal(t, float64(-1), ctdNotification["CancelledAt"].(float64))
+		assert.Equal(t, float64(now.Unix()), ctdNotification["ConfirmedAt"].(float64))
+		assert.Equal(t, float64(now.Unix()-500), ctdNotification["CreatedAt"].(float64))
+	}
 
-	processedNotification = processedNotifications[0].(map[string]interface{})
-	assert.Equal(t, "ctd", processedNotification["DepartmentID"].(string))
+	{
+		var aodNotification map[string]interface{}
+		aodNotification = processedNotifications[1].(map[string]interface{})
+		assert.Equal(t, "aod", aodNotification["DepartmentID"].(string))
+		assert.Equal(t, modality, aodNotification["Modality"].(string))
+		assert.Equal(t, float64(priorityInt), aodNotification["Priority"].(float64))
+		assert.Equal(t, float64(cancelledAt), aodNotification["CancelledAt"].(float64))
+		assert.Equal(t, float64(-1), aodNotification["ConfirmedAt"].(float64))
+		assert.Equal(t, float64(now.Unix()-1000), aodNotification["CreatedAt"].(float64))
+	}
 
 	tearDownTest(t, server, db)
-}
-
-func testNotificationInsert(t *testing.T, db *sql.DB, department string, priority int, modality string, when int64) {
-	err := lmdatabase.NotificationInsert(db, department, priority, modality, when)
-	if err != nil {
-		t.Fatalf("%+v", errors.WithStack(err))
-	}
 }

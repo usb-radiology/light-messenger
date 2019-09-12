@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/PuerkitoBio/goquery" // https://godoc.org/github.com/PuerkitoBio/goquery
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/usb-radiology/light-messenger/src/lmdatabase"
 )
 
 func TestIntegrationIndexShouldReturnLinksForMTRAsAndRadiologists(t *testing.T) {
@@ -32,6 +34,27 @@ func TestIntegrationIndexShouldReturnLinksForMTRAsAndRadiologists(t *testing.T) 
 	assert.EqualValues(t, expectedLinks, links)
 
 	tearDownTest(t, server, db)
+}
+
+func testNotificationInsert(t *testing.T, db *sql.DB, department string, priority int, modality string, when int64) {
+	err := lmdatabase.NotificationInsert(db, department, priority, modality, when)
+	if err != nil {
+		t.Fatalf("%+v", errors.WithStack(err))
+	}
+}
+
+func testArduinoStatusInsert(t *testing.T, db *sql.DB, department string, when int64) lmdatabase.ArduinoStatus {
+	arduinoStatus := lmdatabase.ArduinoStatus{
+		DepartmentID: department,
+		StatusAt:     when,
+	}
+
+	errArduinoStatusInsert := lmdatabase.ArduinoStatusInsert(db, arduinoStatus)
+	if errArduinoStatusInsert != nil {
+		t.Fatalf("%+v", errArduinoStatusInsert)
+	}
+
+	return arduinoStatus
 }
 
 func getResponseHTMLDoc(t *testing.T, request *http.Request) *goquery.Document {
