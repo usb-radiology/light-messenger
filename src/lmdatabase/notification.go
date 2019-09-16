@@ -145,8 +145,8 @@ func NotificationGetProcessedNotificationsByModality(db *sql.DB, modality string
 		AND
 			(confirmedAt <> -1 OR cancelledAt <> -1)
 		ORDER BY 
-			createdAt 
-		DESC`
+			createdAt DESC
+		LIMIT 20`
 
 	rows, errQuery := db.Query(queryStmt, modality)
 	if errQuery != nil {
