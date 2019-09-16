@@ -26,14 +26,14 @@ clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 	rm -f $(BINARY_UNIX)
-test: embed
+test: clean embed
 	$(GOTEST) -v ./...
-test-unit: embed
+test-unit: clean embed
 	$(GOTEST) -v -run Unit ./...
-test-integration: embed
+test-integration: clean embed
 	$(GOTEST) -v -run Integration ./...
 test-coverage: clean embed
-	$(GOTEST) -coverprofile=coverage.out ./...
+	$(GOTEST) -v -coverprofile=coverage.out ./...
 	$(GOCMD) tool cover -html=coverage.out
 run: build
 	./$(BINARY_NAME)

@@ -24,7 +24,7 @@ func NotificationInsert(db *sql.DB, department string, priority int, modality st
 	insertStmt, err := db.Prepare(`
 	INSERT INTO
 		Notification (notificationId, departmentId, priority, modality, createdAt)
-	VALUES( ?, ? , ?, ?, ?) `)
+	VALUES( ?, ?, ?, ?, ?)`)
 
 	if err != nil {
 		return errors.WithStack(err)

@@ -27,6 +27,7 @@ func TestIntegrationNotificationConfirmShouldReturnHTTP200WhenNotificationExists
 
 	testNotificationInsert(t, db, department, priorityInt, modality, now.Unix())
 	insertedNotification := getNotification(t, db, department, modality)
+	assert.NotNil(t, insertedNotification)
 
 	// when
 	request, _ := http.NewRequest("GET", server.URL+"/notification/"+department+"/"+insertedNotification.NotificationID, nil)
@@ -36,6 +37,7 @@ func TestIntegrationNotificationConfirmShouldReturnHTTP200WhenNotificationExists
 
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	notification := getNotificationByID(t, db, insertedNotification.NotificationID)
+	assert.NotNil(t, notification)
 	assert.LessOrEqual(t, now.Unix(), notification.ConfirmedAt)
 
 	tearDownTest(t, server, db)
