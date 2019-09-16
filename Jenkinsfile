@@ -18,15 +18,18 @@ pipeline {
     stages {
       stage('Test') {
         steps {
-          sh "/usr/bin/docker-compose -f docker-compose.yml up -d --force-recreate"
-          sh 'until nc -z localhost 3311; do sleep 1; echo "Waiting for DB to come up..."; done'
-          sh 'sleep 10'
-          sh 'cp config-sample.json config.json'
-          sh 'go get github.com/GeertJohan/go.rice/rice'
-          sh 'make build'
-          sh './light-messenger.exec db-exec --script-path ./res/create_tables.sql'
-          sh 'make test'
-          // sh "/usr/bin/docker-compose -f docker-compose.yml down -v"
+          // for rice
+          withEnv(['PATH=$PATH:/var/lib/jenkins/go/bin']){
+            sh "/usr/bin/docker-compose -f docker-compose.yml up -d --force-recreate"
+            sh 'until nc -z localhost 3311; do sleep 1; echo "Waiting for DB to come up..."; done'
+            sh 'sleep 10'
+            sh 'cp config-sample.json config.json'
+            sh 'go get github.com/GeertJohan/go.rice/rice'
+            sh 'make build'
+            sh './light-messenger.exec db-exec --script-path ./res/create_tables.sql'
+            sh 'make test'
+            // sh "/usr/bin/docker-compose -f docker-compose.yml down -v"
+          }
         }
       }
     }
