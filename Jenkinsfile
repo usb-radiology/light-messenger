@@ -19,7 +19,7 @@ pipeline {
       stage('Test') {
         steps {
           // for rice
-          withEnv(['PATH=$PATH:/var/lib/jenkins/go/bin']){
+          withEnv(["PATH+GO=${root}/bin:${HOME}/go/bin"]){
             sh "/usr/bin/docker-compose -f docker-compose.yml up -d --force-recreate"
             sh 'until nc -z localhost 3311; do sleep 1; echo "Waiting for DB to come up..."; done'
             sh 'sleep 10'
