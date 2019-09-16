@@ -103,7 +103,7 @@ void loop() {
 
 void readDepartmentFromSDCard(){
   //Serial.println("try connect to dep.txt: ");
-  File departmentFile = FileSystem.open("/mnt/sda1/dep.txt");
+  File departmentFile = FileSystem.open("/mnt/sd/dep.txt");
   
   if (departmentFile.available()){
     //Serial.println("dep.txt: ");
