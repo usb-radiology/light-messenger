@@ -26,6 +26,7 @@ pipeline {
             sh 'cp config-sample.json config.json'
             sh 'go get github.com/GeertJohan/go.rice/rice'
             sh 'make build'
+            sh './light-messenger.exec db-exec --script-path ./res/drop_tables.sql'
             sh './light-messenger.exec db-exec --script-path ./res/create_tables.sql'
             sh 'make test'
             // sh "/usr/bin/docker-compose -f docker-compose.yml down -v"
