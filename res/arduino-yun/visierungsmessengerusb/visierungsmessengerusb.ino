@@ -15,7 +15,7 @@ int CTD=2;
 int MSK=3;
 int NR=4;
 
-String serverRestPrefix = "http://10.5.72.154:9200/nce-rest/arduino-status/";
+String serverRestPrefix = "http://10.5.61.114:9200/nce-rest/arduino-status/";
 
 // init URL of serverside get LED status REST controller
 String ledStatusRestControllerUrl = "";
